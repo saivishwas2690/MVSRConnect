@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - MVSR Connect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/e8fec16106.js" crossorigin="anonymous"></script>
+  <style type="text/tailwindcss">
+    @layer components {
+      .form-input {
+        @apply w-full p-3 bg-white border border-gray-200 rounded-lg
+        focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none 
+        transition-all duration-200;
+      }
+      
+      .form-input[readonly] {
+        @apply bg-gray-50 cursor-not-allowed;
+      }
+      
+      .btn-primary {
+        @apply bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg
+        transition-all duration-200 flex items-center justify-center gap-2 
+        font-semibold shadow-lg hover:shadow-xl w-full;
+      }
+      
+      .card {
+        @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
+        border border-gray-100;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+  
+  <!-- Navigation -->
+  <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="/">
+        <h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-md mx-auto p-6">
+    <div class="card p-8 mt-8">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome to MVSR Connect</h2>
+        <p class="text-gray-600">Create your account to get started</p>
+      </div>
+
+      <form id="signup-form" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Name Fields -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">First Name</label>
+            <div class="relative">
+              <input type="text" id="firstname" name="firstname" 
+                     class="form-input pl-10" required />
+              <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <i class="fas fa-user"></i>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Last Name</label>
+            <div class="relative">
+              <input type="text" id="lastname" name="lastname" 
+                     class="form-input pl-10" required />
+              <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <i class="fas fa-user"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Username Field -->
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">Username</label>
+          <div class="relative">
+            <input type="text" id="username" name="username" 
+                   class="form-input pl-10" required />
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <i class="fas fa-at"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Password Fields -->
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">Password</label>
+          <div class="relative">
+            <input type="password" id="password" name="password" 
+                   class="form-input pl-10" required />
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <i class="fas fa-lock"></i>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">Confirm Password</label>
+          <div class="relative">
+            <input type="password" id="confirm_password" name="confirm_password" 
+                   class="form-input pl-10" required />
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <i class="fas fa-lock"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Designation Dropdown -->
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">Designation</label>
+          <div class="relative">
+            <select id="designation" name="designation" class="form-input pl-10" required>
+              <option value="">Select Designation</option>
+              <option value="Student">Student</option>
+            </select>
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <i class="fas fa-user-tag"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-primary mt-8">
+          <i class="fas fa-user-plus"></i>
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Messages Container -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50"></div>
+
+  <script>
+    document.getElementById("signup-form").addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const urlParts = window.location.pathname.split("/").filter(part => part);
+      const token = urlParts[urlParts.length - 1];
+
+      const formData = {
+        firstname: document.getElementById("firstname").value,
+        lastname: document.getElementById("lastname").value,
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+        confirm_password: document.getElementById("confirm_password").value,
+        designation: document.getElementById("designation").value,
+        token: token,
+        current_url: window.location.href
+      };
+
+      try {
+        const response = await fetch(`/verify/${token}/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showToast('Signup successful! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 1500);
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        showToast(`Error: ${error.message}`, 'error');
+      }
+    });
+
+    function showToast(message, type) {
+      const toast = document.createElement('div');
+      toast.className = `flex items-center gap-3 px-6 py-3 rounded-lg shadow-lg mb-3 
+                       transition-all duration-300 transform translate-x-full
+                       ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
+      toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+      `;
+      
+      const container = document.getElementById('toast-container');
+      container.appendChild(toast);
+      
+      // Trigger animation
+      setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+      }, 10);
+
+      // Remove toast after 3 seconds
+      setTimeout(() => {
+        toast.style.transform = 'translateX(full)';
+        setTimeout(() => {
+          container.removeChild(toast);
+        }, 300);
+      }, 3000);
+    }
+  </script>
+
+</body>
+</html>

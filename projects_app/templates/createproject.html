@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Project - MVSR Connect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/e8fec16106.js" crossorigin="anonymous"></script>
+  <style type="text/tailwindcss">
+    @layer components {
+      .nav-link {
+        @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
+        hover:bg-yellow-400 hover:text-blue-900;
+      }
+      
+      .form-input {
+        @apply w-full p-3 bg-white/80 border border-gray-200 rounded-lg focus:ring-2 
+        focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200;
+      }
+
+      .btn-primary {
+        @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg
+        transition-all duration-200 flex items-center justify-center gap-2 font-semibold;
+      }
+
+      .btn-secondary {
+        @apply bg-yellow-500 hover:bg-yellow-600 text-blue-900 px-4 py-2 rounded-lg
+        transition-all duration-200 flex items-center justify-center gap-2 font-semibold;
+      }
+
+      .btn-danger {
+        @apply bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg
+        transition-all duration-200 text-sm;
+      }
+
+      .guide-panel {
+        @apply fixed right-0 top-0 h-full w-96 bg-white shadow-2xl 
+               transform translate-x-full transition-transform duration-300 
+               ease-in-out z-50 overflow-hidden;
+      }
+
+      .guide-panel.active {
+        @apply translate-x-0;
+      }
+
+      #searchResults {
+        @apply bg-white rounded-lg shadow-lg border border-gray-200;
+        min-width: 100%;
+        max-height: 240px;
+        overflow-y: auto;
+        z-index: 1000;
+      }
+
+      #searchResults::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      #searchResults::-webkit-scrollbar-track {
+        @apply bg-gray-100 rounded-r-lg;
+      }
+
+      #searchResults::-webkit-scrollbar-thumb {
+        @apply bg-gray-300 rounded-full;
+      }
+
+      #searchResults::-webkit-scrollbar-thumb:hover {
+        @apply bg-gray-400;
+      }
+
+      .form-select {
+        @apply w-full p-3 bg-white/80 border border-gray-200 rounded-lg 
+        focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none 
+        transition-all duration-200 cursor-pointer;
+      }
+
+      /* Custom select styling */
+      select {
+        @apply form-select;
+      }
+
+      /* Style for option elements */
+      select option {
+        @apply bg-white text-gray-700 py-2;
+      }
+
+      /* Hover state for options */
+      select option:hover {
+        @apply bg-blue-50;
+      }
+
+      /* Selected option */
+      select option:checked {
+        @apply bg-blue-50 text-blue-900;
+      }
+
+      /* Disabled option */
+      select option:disabled {
+        @apply text-gray-400;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+  <!-- Navigation -->
+  <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
+      
+      <div class="flex items-center gap-3">
+        {% if request.user.role == "Student" %}
+          <a href="/projects/createproject/" class="nav-link">Create Project</a>
+        {% elif request.user.role == 'Incharge' %}
+          <a href="/projects/createcourse/" class="nav-link">Create Course</a>
+        {% endif %}
+        <a href="/jobsapi/" class="nav-link">Jobs</a>
+        <a href="/projects/viewprojects/" class="nav-link">Projects</a>
+        <div class="relative group">
+          <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
+            <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+              {{ userdisplay|first }}
+            </span>
+            <span>{{ userdisplay }}</span>
+          </a>
+        </div>
+        <a href="/logout/" class="nav-link">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-4xl mx-auto p-6">
+    <div class="bg-white/10 backdrop-blur-lg rounded-xl p-8 shadow-xl">
+      <h2 class="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+        <i class="fas fa-project-diagram"></i>
+        Create New Project
+      </h2>
+
+      <form id="projectForm" class="space-y-6">
+        <!-- Project Details Section -->
+        <div class="bg-white/90 rounded-lg p-6 space-y-4">
+          <h3 class="text-xl font-semibold text-blue-900 mb-4 flex items-center gap-2">
+            <i class="fas fa-info-circle"></i>
+            Project Details
+          </h3>
+
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Project Name</label>
+            <input type="text" id="projectName" class="form-input" required>
+          </div>
+
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Project Description</label>
+            <textarea id="projectDescription" class="form-input min-h-[100px]" required></textarea>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Course Dropdown -->
+            <div>
+                <label class="block text-gray-700 font-medium mb-2">Course</label>
+                <div class="relative">
+                    <select id="courseDropdown" 
+                            class="form-input appearance-none pr-10 w-full" 
+                            required>
+                        <option value="" disabled selected>Select a course</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Domain Dropdown -->
+            <div id="domainSection" class="hidden">
+                <label class="block text-gray-700 font-medium mb-2">Domain</label>
+                <div class="relative">
+                    <select id="domainDropdown" 
+                            class="form-input appearance-none pr-10 w-full">
+                        <option value="" disabled selected>Select a domain</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Students Section -->
+        <div class="bg-white/90 rounded-lg p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-blue-900 flex items-center gap-2">
+              <i class="fas fa-users"></i>
+              Team Members
+            </h3>
+          </div>
+
+          <!-- Add student button -->
+          <button type="button" id="addTeamMateBtn" class="btn-secondary mb-4 w-full">
+            <i class="fas fa-plus"></i>
+            Add Team Member
+          </button>
+
+          <!-- Search container (initially hidden) -->
+          <div id="searchContainer" class="hidden space-y-2">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    id="studentSearch" 
+                    class="form-input pl-10 w-full" 
+                    placeholder="Search by roll number or name..."
+                    autocomplete="off"
+                >
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            
+            <div id="searchResults" class="bg-white rounded-lg shadow-lg border border-gray-200 hidden">
+                <!-- Results will be populated here -->
+            </div>
+          </div>
+
+          <!-- Selected students container -->
+          <div id="studentsContainer" class="space-y-3">
+            <!-- Selected students will appear here -->
+          </div>
+      </div>
+
+        <!-- Guide Section -->
+        <div id="guideSection" class="hidden bg-white/90 rounded-lg p-6">
+          <h3 class="text-xl font-semibold text-blue-900 flex items-center gap-2 mb-4">
+            <i class="fas fa-chalkboard-teacher"></i>
+            Project Guide
+          </h3>
+          <button type="button" id="checkGuides" class="btn-secondary">
+            <i class="fas fa-search"></i>
+            Check Available Guides
+          </button>
+      </div>
+
+        <!-- Add these inside your form -->
+        <input type="hidden" id="selectedGuideId" name="selectedGuideId">
+        <span id="selectedGuideName" class="hidden"></span>
+
+        <button type="submit" class="btn-primary w-full">
+          <i class="fas fa-save"></i>
+          Create Project
+        </button>
+    </form>
+    </div>
+  </div>
+
+  <!-- Guide Modal -->
+  <div id="guideModal" class="fixed inset-0 bg-blue-900/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
+      <h3 class="text-2xl font-bold text-blue-900 mb-4 flex items-center gap-2">
+        <i class="fas fa-user-tie"></i>
+        Available Guides
+      </h3>
+      <ul id="guideList" class="space-y-2 mb-6">
+        <!-- Guides will be listed here -->
+      </ul>
+      <button onclick="closeGuideModal()" class="btn-primary w-full">
+        <i class="fas fa-times"></i>
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- Guide Panel -->
+  <div id="guidePanel" class="guide-panel">
+    <div class="h-full flex flex-col">
+        <!-- Header -->
+        <div class="p-6 bg-blue-900 text-white">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-semibold flex items-center gap-2">
+                    <i class="fas fa-user-tie"></i>
+                    Available Guides
+                </h3>
+                <button onclick="closeGuidePanel()" class="text-white hover:text-yellow-400 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+  </div>
+
+        <!-- Guides List -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div id="guidesContainer" class="space-y-4">
+                <!-- Guides will be listed here -->
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    let coursesData = [];
+    document.addEventListener("DOMContentLoaded", function() {
+      fetchCourses();
+      document.getElementById("projectForm").addEventListener("submit", submitProjectForm);
+    });
+
+    // Fetch courses from your API.
+    async function fetchCourses() {
+      try {
+        const response = await fetch('/projects/fetchcourses/', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json', 
+            'X-CSRFToken': '{{ csrf_token }}'
+          }
+        });
+        
+        const data = await response.json();
+        console.log("Fetched courses:", data.courses); // Debug log
+        coursesData = data.courses;
+        populateCourses(coursesData);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    }
+
+    // Populate the course dropdown using API data.
+    function populateCourses(courses) {
+      const dropdown = document.getElementById("courseDropdown");
+      
+      // Clear existing options
+      dropdown.innerHTML = `
+        <option value="" disabled selected>Select a course</option>
+        ${courses.map(course => `
+          <option value='${JSON.stringify(course)}'>
+            ${course.name}
+          </option>
+        `).join('')}
+      `;
+      
+      // Remove any existing event listeners
+      const newDropdown = dropdown.cloneNode(true);
+      dropdown.parentNode.replaceChild(newDropdown, dropdown);
+      
+      // Add new event listener
+      newDropdown.addEventListener("change", handleCourseChange);
+      
+      // Initial call to handle default selection
+      handleCourseChange();
+    }
+
+    // Update the domain and guide sections based on the selected course.
+    function handleCourseChange() {
+      const courseDropdown = document.getElementById("courseDropdown");
+      const selectedCourse = JSON.parse(courseDropdown.value);
+      const domainSection = document.getElementById("domainSection");
+      
+      console.log("Selected Course:", selectedCourse); // Debug log
+      console.log("Domain Required:", selectedCourse.domain_requirement); // Debug log
+      
+      // Update course dropdown styling
+      courseDropdown.classList.add('text-blue-900', 'font-medium');
+      
+      // Check if domain is required
+      if (selectedCourse.domain_requirement === true || selectedCourse.domain_requirement === "true") {
+        console.log("Showing domain section"); // Debug log
+        domainSection.classList.remove('hidden');
+        populateDomains(selectedCourse.domains || []);
+      } else {
+        console.log("Hiding domain section"); // Debug log
+        domainSection.classList.add('hidden');
+      }
+      
+      // Toggle guide section
+      document.getElementById("guideSection").classList.toggle("hidden", !selectedCourse.requires_guide);
+    }
+
+    // Populate the domain dropdown using domains from the course JSON.
+    function populateDomains(domains) {
+      console.log("Populating domains:", domains); // Debug log
+      const domainDropdown = document.getElementById("domainDropdown");
+      
+      // Clear existing options
+      domainDropdown.innerHTML = `
+        <option value="" disabled selected>Select a domain</option>
+        ${domains.map(domain => `
+          <option value="${domain}" class="py-2">
+            ${domain}
+          </option>
+        `).join('')}
+      `;
+      
+      // Style the selected option
+      domainDropdown.addEventListener("change", function() {
+        if (this.value) {
+          this.classList.add('text-blue-900', 'font-medium');
+        }
+      });
+    }
+
+    // Show/hide search functionality
+    document.getElementById('addTeamMateBtn').addEventListener('click', function() {
+      const searchContainer = document.getElementById('searchContainer');
+      searchContainer.classList.remove('hidden');
+      document.getElementById('studentSearch').focus();
+    });
+
+    // Search functionality
+    let searchTimeout;
+    const searchInput = document.getElementById('studentSearch');
+    const searchResults = document.getElementById('searchResults');
+
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+      
+      clearTimeout(searchTimeout);
+      
+      if (query.length < 2) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+
+      // Show loading state
+      searchResults.classList.remove('hidden');
+      searchResults.innerHTML = `
+        <div class="p-4 text-gray-500 text-center">
+            <i class="fas fa-spinner fa-spin mr-2"></i> Searching...
+        </div>
+      `;
+
+      searchTimeout = setTimeout(() => {
+        searchStudents(query);
+      }, 300);
+    });
+
+    async function searchStudents(query) {
+      const searchResults = document.getElementById('searchResults');
+      const selectedCourse = JSON.parse(document.getElementById("courseDropdown").value);
+      
+      try {
+        const response = await fetch('/projects/searchteammembers/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({
+            search_query: query,
+            course_id: selectedCourse.course_id
+          })
+        });
+
+        const data = await response.json();
+        console.log("Search results:", data); // Debug log
+        displaySearchResults(data);
+      } catch (error) {
+        console.error('Error searching students:', error);
+        searchResults.innerHTML = `
+          <div class="p-4 text-red-500 text-center">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            Error searching students. Please try again.
+          </div>
+        `;
+      }
+    }
+
+    function displaySearchResults(students) {
+      const searchResults = document.getElementById('searchResults');
+      searchResults.classList.remove('hidden');
+      searchResults.innerHTML = '';
+
+      if (!students || students.length === 0) {
+        searchResults.innerHTML = `
+          <div class="p-4 text-gray-500 text-center">
+            <i class="fas fa-user-slash mr-2"></i>
+            No students found
+          </div>
+        `;
+        return;
+      }
+
+      const resultsList = document.createElement('div');
+      resultsList.className = 'max-h-60 overflow-y-auto';
+
+      students.forEach(student => {
+        const div = document.createElement('div');
+        div.className = 'p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0';
+        div.onclick = () => selectStudent(student);
+        div.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-medium text-blue-900">${student.name}</div>
+              <div class="text-sm text-gray-600">${student.roll_no}</div>
+            </div>
+            <div class="text-blue-600 bg-blue-50 p-2 rounded-full hover:bg-blue-100">
+              <i class="fas fa-plus"></i>
+            </div>
+          </div>
+        `;
+        resultsList.appendChild(div);
+      });
+
+      searchResults.appendChild(resultsList);
+    }
+
+    function selectStudent(student) {
+      // Check for duplicate
+      const existingStudents = document.querySelectorAll('.student-entry');
+      for (let entry of existingStudents) {
+        if (entry.dataset.rollNo === student.roll_no) {
+          alert('This student is already added to the team.');
+          return;
+        }
+      }
+
+      // Add student to the list
+      const container = document.getElementById("studentsContainer");
+      const studentDiv = document.createElement("div");
+      studentDiv.className = "student-entry bg-white rounded-lg p-4 shadow-sm flex items-center justify-between";
+      studentDiv.dataset.rollNo = student.roll_no;
+      
+      studentDiv.innerHTML = `
+        <div>
+          <div class="font-medium text-blue-900">${student.name}</div>
+          <div class="text-sm text-gray-600">${student.roll_no}</div>
+        </div>
+        <button type="button" class="text-red-500 hover:text-red-700 transition-colors p-2" 
+                onclick="this.closest('.student-entry').remove()">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      
+      container.appendChild(studentDiv);
+
+      // Clear and hide search
+      document.getElementById('studentSearch').value = '';
+      document.getElementById('searchResults').classList.add('hidden');
+      document.getElementById('searchContainer').classList.add('hidden');
+    }
+
+    // Handle clicking outside
+    document.addEventListener('click', function(e) {
+      const searchContainer = document.getElementById('searchContainer');
+      const searchResults = document.getElementById('searchResults');
+      const addTeamMateBtn = document.getElementById('addTeamMateBtn');
+      
+      if (!searchContainer.contains(e.target) && !addTeamMateBtn.contains(e.target)) {
+        searchResults.classList.add('hidden');
+        if (!e.target.closest('#studentsContainer')) {
+          searchContainer.classList.add('hidden');
+        }
+      }
+    });
+
+    // Modified guide panel functionality
+    function openGuidePanel() {
+        const panel = document.getElementById('guidePanel');
+        panel.classList.add('active');
+    }
+
+    function closeGuidePanel() {
+        const panel = document.getElementById('guidePanel');
+        panel.classList.remove('active');
+    }
+
+    async function fetchAvailableGuides() {
+        const selectedCourse = JSON.parse(document.getElementById("courseDropdown").value);
+        
+        try {
+            const response = await fetch('/projects/availableguides/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    course_id: selectedCourse.course_id
+                })
+            });
+
+            if (!response.ok) throw new Error('Network response was not ok');
+
+            const data = await response.json();
+            // Sort guides by availability status
+            const sortOrder = { 'Available': 1, 'Limited': 2, 'Unavailable': 3 };
+            const sortedGuides = data.sort((a, b) => 
+                sortOrder[a.availability_status] - sortOrder[b.availability_status]
+            );
+            displayGuides(sortedGuides);
+            openGuidePanel(); // Open the panel after loading guides
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('guidesContainer').innerHTML = `
+                <div class="bg-red-50 text-red-600 p-4 rounded-lg">
+                    <p class="font-medium">Error loading guides</p>
+                    <p class="text-sm">Please try again later</p>
+                </div>
+            `;
+            openGuidePanel(); // Still open panel to show error
+        }
+    }
+
+    function displayGuides(guides) {
+        const container = document.getElementById('guidesContainer');
+        container.innerHTML = guides.map(guide => `
+            <div class="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h4 class="font-semibold text-lg text-blue-900">${guide.name}</h4>
+                    </div>
+                    <span class="px-3 py-1 text-sm font-medium rounded-full ${
+                        guide.availability_status === 'Available' ? 'bg-green-100 text-green-800' :
+                        guide.availability_status === 'Limited' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                    }">
+                        ${guide.availability_status}
+                    </span>
+                </div>
+                <div class="text-sm text-gray-600 mt-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-tasks"></i>
+                        <span>Projects: ${guide.current_projects}/${guide.max_projects}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Add this function to handle guide selection
+    function selectGuide(guideId, guideName) {
+        // You can store the selected guide in a hidden input or variable
+        document.getElementById('selectedGuideId').value = guideId;
+        document.getElementById('selectedGuideName').textContent = guideName;
+        
+        // Close the panel
+        closeGuidePanel();
+        
+        // Show selected guide in the main form
+        document.getElementById('guideSection').innerHTML = `
+            <h3 class="text-xl font-semibold text-blue-900 flex items-center gap-2 mb-4">
+                <i class="fas fa-chalkboard-teacher"></i>
+                Selected Guide
+            </h3>
+            <div class="bg-blue-50 p-4 rounded-lg flex justify-between items-center">
+                <div>
+                    <p class="font-medium text-blue-900">${guideName}</p>
+                    <p class="text-sm text-blue-700">Guide ID: ${guideId}</p>
+                </div>
+                <button type="button" class="btn-secondary text-sm" onclick="resetGuideSelection()">
+                    Change Guide
+                </button>
+            </div>
+        `;
+    }
+
+    // Add this function to reset guide selection
+    function resetGuideSelection() {
+        document.getElementById('selectedGuideId').value = '';
+        document.getElementById('selectedGuideName').textContent = '';
+        document.getElementById('guideSection').innerHTML = `
+            <h3 class="text-xl font-semibold text-blue-900 flex items-center gap-2 mb-4">
+                <i class="fas fa-chalkboard-teacher"></i>
+                Project Guide
+            </h3>
+            <button type="button" id="checkGuides" class="btn-secondary">
+                <i class="fas fa-search"></i>
+                Check Available Guides
+            </button>
+        `;
+        
+        // Reattach event listener
+        document.getElementById("checkGuides").addEventListener("click", fetchAvailableGuides);
+    }
+
+    // Make sure event listener is properly attached
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById("checkGuides").addEventListener("click", fetchAvailableGuides);
+    });
+
+    // Gather form data and send it to the API on form submission.
+    async function submitProjectForm(event) {
+      event.preventDefault();
+      
+      try {
+        // Basic form validation
+        const projectName = document.getElementById("projectName").value.trim();
+        const projectDescription = document.getElementById("projectDescription").value.trim();
+        const courseDropdown = document.getElementById("courseDropdown");
+        
+        if (!projectName) {
+          throw new Error("Project name is required");
+        }
+        if (!projectDescription) {
+          throw new Error("Project description is required");
+        }
+        if (!courseDropdown.value) {
+          throw new Error("Please select a course");
+        }
+
+        // Get the selected course details
+        const selectedCourse = JSON.parse(courseDropdown.value);
+        
+        // Domain validation
+        let selectedDomain = null;
+        const domainSection = document.getElementById("domainSection");
+        if (!domainSection.classList.contains("hidden")) {
+          selectedDomain = document.getElementById("domainDropdown").value;
+          if (!selectedDomain) {
+            throw new Error("Please select a domain");
+          }
+        }
+        
+        // Collect student entries
+        const studentEntries = document.querySelectorAll("#studentsContainer .student-entry");
+        if (studentEntries.length === 0) {
+          throw new Error("Please add at least one team member");
+        }
+
+        const students = Array.from(studentEntries).map(entry => ({
+          roll: entry.dataset.rollNo // Using the dataset we stored when adding students
+        }));
+
+        // Guide validation if required
+        let guideId = null;
+        // if (selectedCourse.requires_guide) {
+        //   guideId = document.getElementById('selectedGuideId').value;
+        //   if (!guideId) {
+        //     throw new Error("Please select a project guide");
+        //   }
+        // }
+
+        // Build the payload
+        const payload = {
+          project_name: projectName,
+          project_description: projectDescription,
+          course_id: selectedCourse.course_id,
+          domain: selectedDomain,
+          students: students,
+          guide_id: guideId
+        };
+
+        // Show loading state
+        const submitButton = event.target.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.innerHTML;
+        submitButton.disabled = true;
+        submitButton.innerHTML = `
+          <i class="fas fa-spinner fa-spin"></i>
+          Creating Project...
+        `;
+
+        // Send the request
+        const response = await fetch('/projects/createproject/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to create project');
+        }
+
+        // Success handling
+        alert("Project created successfully!");
+        window.location.href = `/projects/${data.id}`; // Redirect to the new project
+
+      } catch (error) {
+        // Error handling
+        console.error("Error:", error);
+        alert(error.message || "An error occurred while creating the project. Please try again.");
+      } finally {
+        // Reset loading state
+        const submitButton = document.querySelector('button[type="submit"]');
+        submitButton.disabled = false;
+        submitButton.innerHTML = `
+          <i class="fas fa-save"></i>
+          Create Project
+        `;
+      }
+    }
+  </script>
+</body>
+</html>

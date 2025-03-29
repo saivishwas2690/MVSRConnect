@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/e8fec16106.js" crossorigin="anonymous"></script>
+    <title>Create Course - MVSR Connect</title>
+    <style type="text/tailwindcss">
+        @layer components {
+            .nav-link {
+                @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
+                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2;
+            }
+            
+            .form-section {
+                @apply bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/10
+                hover:border-white/20 transition-all duration-300;
+            }
+
+            .form-input {
+                @apply w-full p-3 bg-white/90 border border-gray-200 rounded-lg text-blue-900
+                focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none 
+                transition-all duration-200;
+            }
+
+            .form-select {
+                @apply form-input appearance-none cursor-pointer;
+            }
+
+            .form-label {
+                @apply block text-white/90 font-medium mb-2 flex items-center gap-2;
+            }
+
+            .btn-primary {
+                @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 
+                text-white px-6 py-3 rounded-lg transition-all duration-200 
+                flex items-center justify-center gap-2 font-semibold shadow-lg hover:shadow-xl;
+            }
+
+            .btn-secondary {
+                @apply bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 
+                text-blue-900 px-4 py-2 rounded-lg transition-all duration-200 
+                flex items-center justify-center gap-2 font-semibold shadow-md hover:shadow-lg;
+            }
+
+            .btn-danger {
+                @apply bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700
+                text-white px-3 py-2 rounded-lg transition-all duration-200 
+                flex items-center justify-center gap-2 font-semibold;
+            }
+
+            .section-header {
+                @apply text-xl font-semibold text-white mb-4 flex items-center gap-2
+                pb-4 border-b border-white/10;
+            }
+
+            .input-group {
+                @apply relative;
+            }
+
+            .input-group i {
+                @apply absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none;
+            }
+
+            .input-group input, .input-group select {
+                @apply pl-10;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
+            
+            <div class="flex items-center gap-3">
+                {% if request.user.role == "Student" %}
+                    <a href="/projects/createproject/" class="nav-link">
+                        <i class="fas fa-plus-circle"></i>
+                        Create Project
+                    </a>
+                {% elif request.user.role == 'Incharge' %}
+                    <a href="/projects/createcourse/" class="nav-link">
+                        <i class="fas fa-book"></i>
+                        Create Course
+                    </a>
+                {% endif %}
+                <a href="/jobsapi/" class="nav-link">
+                    <i class="fas fa-briefcase"></i>
+                    Jobs
+                </a>
+                <a href="/projects/viewprojects/" class="nav-link">
+                    <i class="fas fa-project-diagram"></i>
+                    Projects
+                </a>
+                <div class="relative group">
+                    <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
+                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                            {{ userdisplay|first }}
+                        </span>
+                        <span>{{ userdisplay }}</span>
+                    </a>
+                </div>
+                <a href="/logout/" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-5xl mx-auto p-6">
+        <div class="space-y-6">
+            <!-- Header Section -->
+            <div class="form-section">
+                <h2 class="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                    <i class="fas fa-book"></i>
+                    Create New Course
+                </h2>
+                <p class="text-white/80">Fill in the course details below to create a new course.</p>
+            </div>
+
+            <form id="courseForm" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <!-- Basic Details Section -->
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-info-circle"></i>
+                            Basic Details
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div class="input-group">
+                                <i class="fas fa-graduation-cap"></i>
+                                <input type="text" id="course_name" class="form-input" placeholder="Course Name" required>
+                            </div>
+                            
+                            <div class="input-group">
+                                <i class="fas fa-hashtag"></i>
+                                <input type="text" id="course_code" class="form-input" placeholder="Course Code" required>
+                            </div>
+                            
+                            <div class="input-group">
+                                <i class="fas fa-calendar"></i>
+                                <select id="batch" class="form-select" required>
+                                    <option value="" disabled selected>Select Batch Year</option>
+                                    <option>2025</option>
+                                    <option>2026</option>
+                                    <option>2027</option>
+                                    <option>2028</option>
+                                    <option>2029</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Requirements Section -->
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-tasks"></i>
+                            Course Requirements
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div class="input-group">
+                                <i class="fas fa-user-tie"></i>
+                                <select id="requires_guide" class="form-select">
+                                    <option value="false">Guide Not Required</option>
+                                    <option value="true">Guide Required</option>
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <i class="fas fa-building"></i>
+                                <select id="requires_internship" class="form-select">
+                                    <option value="false">Internship Not Required</option>
+                                    <option value="true">Internship Required</option>
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <i class="fas fa-tags"></i>
+                                <select id="domain_requirement" class="form-select">
+                                    <option value="false">Domain Not Required</option>
+                                    <option value="true">Domain Required</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Guide Limits -->
+                        <div id="guide_limits" class="hidden mt-4 space-y-4 pt-4 border-t border-white/10">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="input-group">
+                                    <i class="fas fa-user-graduate"></i>
+                                    <input type="number" id="limit_per_prof" class="form-input" 
+                                           placeholder="Professor Limit" min="0">
+                                </div>
+                                
+                                <div class="input-group">
+                                    <i class="fas fa-user-graduate"></i>
+                                    <input type="number" id="limit_per_asst_prof" class="form-input" 
+                                           placeholder="Asst. Prof Limit" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <!-- Domains Section -->
+                    <div id="domain_fields" class="form-section hidden">
+                        <h3 class="section-header">
+                            <i class="fas fa-tags"></i>
+                            Domains
+                        </h3>
+                        
+                        <div id="domains_container" class="space-y-3 mb-4"></div>
+                        <button type="button" onclick="addDomainField()" class="btn-secondary">
+                            <i class="fas fa-plus"></i>
+                            Add Domain
+                        </button>
+                    </div>
+
+                    <!-- Rubrics Section -->
+                    <div class="form-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-clipboard-list"></i>
+                            Evaluation Rubrics
+                        </h3>
+                        
+                        <div id="rubrics_container" class="space-y-3 mb-4"></div>
+                        <button type="button" onclick="addRubricField()" class="btn-secondary">
+                            <i class="fas fa-plus"></i>
+                            Add Rubric
+                        </button>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-primary w-full">
+                        <i class="fas fa-save"></i>
+                        Create Course
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('requires_guide').addEventListener('change', function() {
+            document.getElementById('guide_limits').classList.toggle('hidden', this.value !== 'true');
+        });
+
+        document.getElementById('domain_requirement').addEventListener('change', function() {
+            document.getElementById('domain_fields').classList.toggle('hidden', this.value !== 'true');
+        });
+
+        function addDomainField() {
+            const container = document.getElementById('domains_container');
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-3 bg-white/5 p-3 rounded-lg';
+            div.innerHTML = `
+                <input type="text" class="form-input flex-1" placeholder="Enter domain name" required>
+                <button type="button" onclick="this.parentElement.remove()" class="btn-danger">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addRubricField() {
+            const container = document.getElementById('rubrics_container');
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-3 bg-white/5 p-3 rounded-lg';
+            div.innerHTML = `
+                <input type="text" class="form-input flex-1" placeholder="Rubric Name" required>
+                <input type="number" class="form-input w-32" placeholder="Marks" min="0" required>
+                <button type="button" onclick="this.parentElement.remove()" class="btn-danger">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(div);
+        }
+
+        document.getElementById('courseForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const domains = Array.from(document.querySelectorAll('#domains_container input')).map(input => input.value);
+            const rubrics = Array.from(document.querySelectorAll('#rubrics_container .flex')).map(field => ({
+                name: field.querySelector('input[placeholder="Rubric Name"]').value,
+                total_marks: parseInt(field.querySelector('input[placeholder="Marks"]').value, 10)
+            }));
+
+            const payload = {
+                course_name: document.getElementById('course_name').value,
+                code: document.getElementById('course_code').value,
+                batch: parseInt(document.getElementById('batch').value),
+                requires_guide: document.getElementById('requires_guide').value === 'true',
+                requires_internship: document.getElementById('requires_internship').value === 'true',
+                limit_per_prof: parseInt(document.getElementById('limit_per_prof').value) || 0,
+                limit_per_asst_prof: parseInt(document.getElementById('limit_per_asst_prof').value) || 0,
+                domain_requirement: document.getElementById('domain_requirement').value === 'true',
+                domains: domains,
+                rubrics: rubrics
+            };
+
+            const response = await fetch('/projects/createcourse/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            alert(result.message || result.error);
+        });
+    </script>
+</body>
+</html>

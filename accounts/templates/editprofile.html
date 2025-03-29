@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - MVSR Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/e8fec16106.js" crossorigin="anonymous"></script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .nav-link {
+                @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
+                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2;
+            }
+            
+            .card {
+                @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
+                border border-gray-100;
+            }
+            
+            .section-title {
+                @apply text-xl font-bold text-gray-800 mb-4 flex items-center gap-2
+                pb-4 border-b border-gray-200;
+            }
+
+            .form-input {
+                @apply w-full p-3 bg-white border border-gray-200 rounded-lg
+                focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none 
+                transition-all duration-200;
+            }
+
+            .btn-primary {
+                @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg
+                transition-all duration-200 flex items-center justify-center gap-2 
+                font-semibold shadow-lg hover:shadow-xl;
+            }
+
+            .btn-secondary {
+                @apply bg-yellow-500 hover:bg-yellow-600 text-blue-900 px-4 py-2 rounded-lg
+                transition-all duration-200 flex items-center justify-center gap-2 
+                font-semibold shadow-md hover:shadow-lg;
+            }
+
+            .btn-danger {
+                @apply bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg
+                transition-all duration-200 flex items-center justify-center gap-2;
+            }
+
+            .suggestions-container {
+                @apply absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl 
+                border border-gray-200 max-h-48 overflow-y-auto z-50;
+            }
+
+            .suggestion-item {
+                @apply px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors duration-150
+                text-gray-700 flex items-center gap-2;
+            }
+
+            .suggestion-item.active {
+                @apply bg-blue-100;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
+            
+            <div class="flex items-center gap-3">
+                {% if request.user.role == "Student" %}
+                    <a href="/projects/createproject/" class="nav-link">
+                        <i class="fas fa-plus-circle"></i>
+                        Create Project
+                    </a>
+                {% elif request.user.role == 'Incharge' %}
+                    <a href="/projects/createcourse/" class="nav-link">
+                        <i class="fas fa-book"></i>
+                        Create Course
+                    </a>
+                {% endif %}
+                <a href="/jobsapi/" class="nav-link">
+                    <i class="fas fa-briefcase"></i>
+                    Jobs
+                </a>
+                <a href="/projects/viewprojects/" class="nav-link">
+                    <i class="fas fa-project-diagram"></i>
+                    Projects
+                </a>
+                <div class="relative group">
+                    <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
+                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                            {{ userdisplay|first }}
+                        </span>
+                        <span>{{ userdisplay }}</span>
+                    </a>
+                </div>
+                <a href="/logout/" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="fixed inset-0 bg-blue-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-xl">
+            <div class="flex flex-col items-center">
+                <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+                <p class="text-gray-700">Loading profile data...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <form id="editProfileForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="space-y-6">
+                <!-- Basic Info Card -->
+                <div class="card p-6">
+                    <h3 class="section-title">
+                        <i class="fas fa-user text-blue-500"></i>
+                        Basic Information
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Full Name</label>
+                            <input type="text" id="name" class="form-input bg-gray-50 cursor-not-allowed" 
+                                   readonly value="{{ request.user.name }}">
+                            <p class="text-sm text-gray-500 mt-1">Contact admin to change your name</p>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Email</label>
+                            <input type="email" id="email" class="form-input bg-gray-50 cursor-not-allowed" 
+                                   readonly value="{{ request.user.email }}">
+                            <p class="text-sm text-gray-500 mt-1">Contact admin to change your email</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills Card -->
+                <div class="card p-6">
+                    <h3 class="section-title">
+                        <i class="fas fa-code text-blue-500"></i>
+                        Skills
+                    </h3>
+                    <div id="skillsContainer" class="space-y-2 mb-4">
+                        <!-- Skills will be added here -->
+                    </div>
+                    <button type="button" onclick="addSkill()" class="btn-secondary w-full">
+                        <i class="fas fa-plus"></i>
+                        Add Skill
+                    </button>
+                </div>
+
+                <!-- Interests Card -->
+                <div class="card p-6">
+                    <h3 class="section-title">
+                        <i class="fas fa-star text-blue-500"></i>
+                        Interests
+                    </h3>
+                    <div id="interestsContainer" class="space-y-2 mb-4">
+                        <!-- Interests will be added here -->
+                    </div>
+                    <button type="button" onclick="addInterest()" class="btn-secondary w-full">
+                        <i class="fas fa-plus"></i>
+                        Add Interest
+                    </button>
+                </div>
+
+                <!-- Social Links Card -->
+                <div class="card p-6">
+                    <h3 class="section-title">
+                        <i class="fas fa-link text-blue-500"></i>
+                        Social Links
+                    </h3>
+                    <div id="socialLinksContainer" class="space-y-2 mb-4">
+                        <!-- Social links will be added here -->
+                    </div>
+                    <button type="button" onclick="addSocialLink()" class="btn-secondary w-full">
+                        <i class="fas fa-plus"></i>
+                        Add Social Link
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Personal Projects Card -->
+                <div class="card p-6">
+                    <h3 class="section-title">
+                        <i class="fas fa-laptop-code text-blue-500"></i>
+                        Personal Projects
+                    </h3>
+                    <div id="personalProjectsContainer" class="space-y-4 mb-4">
+                        <!-- Personal projects will be added here -->
+                    </div>
+                    <button type="button" onclick="addPersonalProject()" class="btn-secondary">
+                        <i class="fas fa-plus"></i>
+                        Add Project
+                    </button>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end gap-4">
+                    <a href="/profile/{{ request.user.id }}" class="btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i>
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Fetch current profile data
+        async function fetchProfileData() {
+            const loadingState = document.getElementById('loadingState');
+            try {
+                const response = await fetch(`/profile/{{ request.user.id }}/`, {
+                    method: 'FETCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch profile');
+                
+                const data = await response.json();
+                console.log('Fetched profile data:', data);
+                populateForm(data);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error loading profile data. Please try again.');
+            } finally {
+                loadingState.classList.add('hidden');
+            }
+        }
+
+        function populateForm(data) {
+            // Basic info (read-only)
+            document.getElementById('name').value = data.name || '';
+            document.getElementById('email').value = data.email || '';
+            
+            // Clear existing containers
+            document.getElementById('skillsContainer').innerHTML = '';
+            document.getElementById('interestsContainer').innerHTML = '';
+            document.getElementById('socialLinksContainer').innerHTML = '';
+            document.getElementById('personalProjectsContainer').innerHTML = '';
+            
+            // Populate with IDs
+            if (data.skills && data.skills.length > 0) {
+                data.skills.forEach(skill => addSkill(skill));
+            }
+            
+            if (data.interests && data.interests.length > 0) {
+                data.interests.forEach(interest => addInterest(interest));
+            }
+            
+            if (data.social_links && data.social_links.length > 0) {
+                data.social_links.forEach(link => addSocialLink(link));
+            }
+            
+            if (data.personal_projects && data.personal_projects.length > 0) {
+                data.personal_projects.forEach(project => addPersonalProject(project));
+            }
+        }
+
+        async function fetchSkills(query = '') {
+            try {
+                const response = await fetch(`/skills/${query}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to fetch skills');
+                const data = await response.json();
+                return data.data;
+            } catch (error) {
+                console.error('Error fetching skills:', error);
+                return [];
+            }
+        }
+
+        async function fetchInterests(query = '') {
+            try {
+                const response = await fetch(`/interests/${query}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to fetch interests');
+                const data = await response.json();
+                return data.data;
+            } catch (error) {
+                console.error('Error fetching interests:', error);
+                return [];
+            }
+        }
+
+        async function addSkill(skill = { id: null, name: '' }) {
+            const container = document.getElementById('skillsContainer');
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 relative';
+            
+            div.innerHTML = `
+                <input type="hidden" name="skill_id" value="${skill.id || ''}">
+                <div class="relative flex-1">
+                    <input type="text" 
+                           class="form-input pr-8" 
+                           placeholder="Search for a skill" 
+                           value="${skill.name}"
+                           autocomplete="off"
+                           required>
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="suggestions-container hidden">
+                        <!-- Suggestions will be populated here -->
+                    </div>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="btn-danger">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(div);
+
+            const input = div.querySelector('input[type="text"]');
+            const suggestionsContainer = div.querySelector('.suggestions-container');
+            let currentFocus = -1;
+
+            async function showSuggestions(query) {
+                const skills = await fetchSkills(query);
+                if (skills.length === 0) {
+                    suggestionsContainer.classList.add('hidden');
+                    return;
+                }
+
+                suggestionsContainer.innerHTML = skills.map(s => `
+                    <div class="suggestion-item" data-value="${s}">
+                        <i class="fas fa-code text-blue-500"></i>
+                        ${s}
+                    </div>
+                `).join('');
+                suggestionsContainer.classList.remove('hidden');
+
+                // Add click handlers to suggestions
+                suggestionsContainer.querySelectorAll('.suggestion-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        input.value = item.dataset.value;
+                        suggestionsContainer.classList.add('hidden');
+                    });
+                });
+            }
+
+            // Input event handlers
+            input.addEventListener('input', async (e) => {
+                const query = e.target.value;
+                if (query.length > 0) {
+                    await showSuggestions(query);
+                } else {
+                    suggestionsContainer.classList.add('hidden');
+                }
+            });
+
+            input.addEventListener('focus', async () => {
+                if (input.value.length > 0) {
+                    await showSuggestions(input.value);
+                }
+            });
+
+            // Handle keyboard navigation
+            input.addEventListener('keydown', (e) => {
+                const items = suggestionsContainer.querySelectorAll('.suggestion-item');
+                
+                if (e.key === 'ArrowDown') {
+                    currentFocus++;
+                    if (currentFocus >= items.length) currentFocus = 0;
+                    highlightItem(items, currentFocus);
+                } else if (e.key === 'ArrowUp') {
+                    currentFocus--;
+                    if (currentFocus < 0) currentFocus = items.length - 1;
+                    highlightItem(items, currentFocus);
+                } else if (e.key === 'Enter' && currentFocus > -1) {
+                    e.preventDefault();
+                    if (items[currentFocus]) {
+                        input.value = items[currentFocus].dataset.value;
+                        suggestionsContainer.classList.add('hidden');
+                    }
+                }
+            });
+
+            // Close suggestions when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!div.contains(e.target)) {
+                    suggestionsContainer.classList.add('hidden');
+                }
+            });
+        }
+
+        // Helper function for keyboard navigation
+        function highlightItem(items, index) {
+            items.forEach(item => item.classList.remove('active'));
+            if (items[index]) {
+                items[index].classList.add('active');
+                items[index].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        async function addInterest(interest = { id: null, name: '' }) {
+            const container = document.getElementById('interestsContainer');
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 relative';
+            
+            div.innerHTML = `
+                <input type="hidden" name="interest_id" value="${interest.id || ''}">
+                <div class="relative flex-1">
+                    <input type="text" 
+                           class="form-input pr-8" 
+                           placeholder="Search for an interest" 
+                           value="${interest.name}"
+                           autocomplete="off"
+                           required>
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="suggestions-container hidden">
+                        <!-- Suggestions will be populated here -->
+                    </div>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="btn-danger">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(div);
+
+            const input = div.querySelector('input[type="text"]');
+            const suggestionsContainer = div.querySelector('.suggestions-container');
+            let currentFocus = -1;
+
+            async function showSuggestions(query) {
+                const interests = await fetchInterests(query);
+                if (interests.length === 0) {
+                    suggestionsContainer.classList.add('hidden');
+                    return;
+                }
+
+                suggestionsContainer.innerHTML = interests.map(i => `
+                    <div class="suggestion-item" data-value="${i}">
+                        <i class="fas fa-star text-yellow-500"></i>
+                        ${i}
+                    </div>
+                `).join('');
+                suggestionsContainer.classList.remove('hidden');
+
+                // Add click handlers to suggestions
+                suggestionsContainer.querySelectorAll('.suggestion-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        input.value = item.dataset.value;
+                        suggestionsContainer.classList.add('hidden');
+                    });
+                });
+            }
+
+            // Input event handlers
+            input.addEventListener('input', async (e) => {
+                const query = e.target.value;
+                if (query.length > 0) {
+                    await showSuggestions(query);
+                } else {
+                    suggestionsContainer.classList.add('hidden');
+                }
+            });
+
+            input.addEventListener('focus', async () => {
+                if (input.value.length > 0) {
+                    await showSuggestions(input.value);
+                }
+            });
+
+            // Handle keyboard navigation
+            input.addEventListener('keydown', (e) => {
+                const items = suggestionsContainer.querySelectorAll('.suggestion-item');
+                
+                if (e.key === 'ArrowDown') {
+                    currentFocus++;
+                    if (currentFocus >= items.length) currentFocus = 0;
+                    highlightItem(items, currentFocus);
+                } else if (e.key === 'ArrowUp') {
+                    currentFocus--;
+                    if (currentFocus < 0) currentFocus = items.length - 1;
+                    highlightItem(items, currentFocus);
+                } else if (e.key === 'Enter' && currentFocus > -1) {
+                    e.preventDefault();
+                    if (items[currentFocus]) {
+                        input.value = items[currentFocus].dataset.value;
+                        suggestionsContainer.classList.add('hidden');
+                    }
+                }
+            });
+
+            // Close suggestions when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!div.contains(e.target)) {
+                    suggestionsContainer.classList.add('hidden');
+                }
+            });
+        }
+
+        function addSocialLink(link = { id: null, platform: '', url: '' }) {
+            const container = document.getElementById('socialLinksContainer');
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 social-link';
+            div.innerHTML = `
+                <input type="hidden" name="social_link_id" value="${link.id || ''}">
+                <select class="form-input w-40" required>
+                    <option value="">Select Platform</option>
+                    <option value="GitHub" ${link.platform === 'GitHub' ? 'selected' : ''}>GitHub</option>
+                    <option value="LinkedIn" ${link.platform === 'LinkedIn' ? 'selected' : ''}>LinkedIn</option>
+                    <option value="Hugging Face" ${link.platform === 'Hugging Face' ? 'selected' : ''}>Hugging Face</option>
+                </select>
+                <input type="url" class="form-input flex-1" placeholder="Enter URL" value="${link.url}" required>
+                <button type="button" onclick="this.parentElement.remove()" class="btn-danger">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addPersonalProject(project = { id: null, title: '', description: '', link: '' }) {
+            const container = document.getElementById('personalProjectsContainer');
+            const div = document.createElement('div');
+            div.className = 'bg-gray-50 rounded-lg p-4 border border-gray-200';
+            div.innerHTML = `
+                <input type="hidden" name="project_id" value="${project.id || ''}">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Project Title</label>
+                        <input type="text" class="form-input" placeholder="Enter project title" 
+                               value="${project.title}" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Description</label>
+                        <textarea class="form-input min-h-[100px]" placeholder="Enter project description" 
+                                  required>${project.description}</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Project Link (Optional)</label>
+                        <input type="url" class="form-input" placeholder="https://..." 
+                               value="${project.link || ''}">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="this.closest('.bg-gray-50').remove()" 
+                                class="btn-danger">
+                            <i class="fas fa-trash"></i>
+                            Remove Project
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        // Form submission
+        document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                "id": {{ request.user.id }},
+                skills: Array.from(document.querySelectorAll('#skillsContainer > div')).map(div => ({
+                    id: div.querySelector('input[name="skill_id"]').value || null,
+                    name: div.querySelector('input[type="text"]').value
+                })),
+                interests: Array.from(document.querySelectorAll('#interestsContainer > div')).map(div => ({
+                    id: div.querySelector('input[name="interest_id"]').value || null,
+                    name: div.querySelector('input[type="text"]').value
+                })),
+                social_links: Array.from(document.querySelectorAll('#socialLinksContainer .social-link')).map(div => ({
+                    id: div.querySelector('input[name="social_link_id"]').value || null,
+                    platform: div.querySelector('select').value,
+                    url: div.querySelector('input[type="url"]').value
+                })),
+                personal_projects: Array.from(document.querySelectorAll('#personalProjectsContainer .bg-gray-50')).map(div => ({
+                    id: div.querySelector('input[name="project_id"]').value || null,
+                    title: div.querySelector('input[type="text"]').value,
+                    description: div.querySelector('textarea').value,
+                    link: div.querySelector('input[type="url"]').value || null
+                }))
+            };
+
+            try {
+                const response = await fetch('/editprofile/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) throw new Error('Failed to update profile');
+                
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = `/profile/{{ request.user.id }}`;
+                } else {
+                    throw new Error(result.message || 'Failed to update profile');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error updating profile. Please try again.');
+            }
+        });
+
+        // Initialize
+        fetchProfileData();
+    </script>
+</body>
+</html> 

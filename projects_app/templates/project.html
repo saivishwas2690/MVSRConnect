@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Details - MVSR Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/e8fec16106.js" crossorigin="anonymous"></script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .nav-link {
+                @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
+                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2;
+            }
+            
+            .card {
+                @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
+                border border-gray-100;
+            }
+            
+            .section-title {
+                @apply text-xl font-bold text-gray-800 mb-4 flex items-center gap-2;
+            }
+
+            .download-btn {
+                @apply flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg
+                hover:bg-blue-700 transition-all duration-200 font-semibold;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
+            
+            <div class="flex items-center gap-3">
+                {% if request.user.role == "Student" %}
+                    <a href="/projects/createproject/" class="nav-link">
+                        <i class="fas fa-plus-circle"></i>
+                        Create Project
+                    </a>
+                {% elif request.user.role == 'Incharge' %}
+                    <a href="/projects/createcourse/" class="nav-link">
+                        <i class="fas fa-book"></i>
+                        Create Course
+                    </a>
+                {% endif %}
+                <a href="/jobsapi/" class="nav-link">
+                    <i class="fas fa-briefcase"></i>
+                    Jobs
+                </a>
+                <a href="/projects/viewprojects/" class="nav-link">
+                    <i class="fas fa-project-diagram"></i>
+                    Projects
+                </a>
+                <div class="relative group">
+                    <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
+                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                            {{ userdisplay|first }}
+                        </span>
+                        <span>{{ userdisplay }}</span>
+                    </a>
+                </div>
+                <a href="/logout/" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Project Header -->
+        <div class="card p-6 mb-6">
+            <div class="flex flex-col lg:flex-row justify-between gap-6">
+                <div class="space-y-4">
+                    <h1 id="projectTitle" class="text-3xl font-bold text-gray-800"></h1>
+                    <div class="flex flex-wrap gap-4">
+                        <div id="projectBatch" class="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-400 
+                                                    text-blue-900 rounded-lg font-semibold flex items-center gap-2 
+                                                    shadow-md">
+                            <i class="fas fa-tag"></i>
+                            <!-- Batch name will be rendered here -->
+                        </div>
+                        <div id="projectDomain" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-400 
+                                             text-white rounded-lg font-semibold flex items-center gap-2 
+                                             shadow-md">
+                            <i class="fas fa-globe"></i>
+                            <!-- Domain will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+                <div id="evaluateButtonContainer">
+                    <!-- Evaluate button will be rendered here -->
+                </div>
+                <div id="beGuideButtonContainer">
+                    <!-- Be Guide button will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="space-y-6">
+                <!-- Course Info -->
+                <div class="card p-6">
+                    <h2 class="section-title">
+                        <i class="fas fa-book text-blue-500"></i>
+                        Course Details
+                    </h2>
+                    <div id="courseDetails" class="space-y-2">
+                        <!-- Course details will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Team Members -->
+                <div class="card p-6">
+                    <h2 class="section-title">
+                        <i class="fas fa-users text-blue-500"></i>
+                        Team Members
+                    </h2>
+                    <div id="teamMembers" class="divide-y divide-gray-100">
+                        <!-- Team members will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Project Guide -->
+                <div id="guideSection" class="card p-6">
+                    <h2 class="section-title">
+                        <i class="fas fa-chalkboard-teacher text-blue-500"></i>
+                        Project Guide
+                    </h2>
+                    <div id="projectGuide">
+                        <!-- Guide details will be rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Project Description -->
+                <div class="card p-6">
+                    <h2 class="section-title">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                        Project Description
+                    </h2>
+                    <p id="projectDescription" class="text-gray-700 leading-relaxed"></p>
+                </div>
+
+                <!-- Documents -->
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="section-title mb-0">
+                            <i class="fas fa-file-alt text-blue-500"></i>
+                            Project Documents
+                        </h2>
+                        <div id="uploadButtonsContainer" class="flex gap-3">
+                            <!-- Upload buttons will be rendered here -->
+                        </div>
+                    </div>
+                    
+                    <div id="documentsSection" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Documents will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add PDF Viewer Modal -->
+    <div id="pdfViewerModal" class="fixed inset-0 bg-gray-900/90 backdrop-blur-sm hidden z-50">
+        <div class="min-h-screen w-full p-4 flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center bg-white rounded-t-lg p-4">
+                <h3 class="text-xl font-bold text-gray-800" id="pdfTitle"></h3>
+                <button onclick="closePdfViewer()" 
+                        class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <!-- PDF Container -->
+            <div class="flex-1 bg-white relative">
+                <object id="pdfViewer" 
+                        data="" 
+                        type="application/pdf" 
+                        class="w-full h-full min-h-[80vh]">
+                    <div class="absolute inset-0 flex items-center justify-center flex-col gap-4">
+                        <p class="text-gray-600">
+                            Unable to display PDF directly. 
+                        </p>
+                        <a id="pdfDownloadLink" 
+                           href="" 
+                           target="_blank" 
+                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all">
+                            Open PDF in new tab
+                        </a>
+                    </div>
+                </object>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Loader -->
+    <div id="uploadLoader" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-xl shadow-xl flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+            <p class="mt-4 text-gray-700">Uploading document...</p>
+        </div>
+    </div>
+
+    <!-- Response Popup -->
+    <div id="responsePopup" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-xl shadow-xl max-w-md w-full mx-4">
+            <div id="responseContent" class="flex flex-col items-center">
+                <!-- Content will be dynamically inserted -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+    async function fetchProjectDetails() {
+        try {
+            const projectId = window.location.pathname.split('/').filter(Boolean).pop();
+            const response = await fetch(`/projects/${projectId}/`, {
+                method: 'FETCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch project details');
+            
+            const data = await response.json();
+            renderProjectDetails(data);
+        } catch (error) {
+            console.error('Error:', error);
+            // Show error message
+        }
+    }
+
+    function renderProjectDetails(data) {
+        // Project Title and Metadata
+        document.getElementById('projectTitle').textContent = data.title || 'Untitled Project';
+        document.getElementById('projectBatch').innerHTML = `
+            <i class="fas fa-tag"></i>
+            <span>${data.nick_name || 'No Batch'}</span>
+        `;
+        
+        if (data.domain_required) {
+            document.getElementById('projectDomain').innerHTML = `
+                <i class="fas fa-globe"></i>
+                <span>${data.domain || 'Domain not specified'}</span>
+            `;
+        }
+
+        // Course Details
+        document.getElementById('courseDetails').innerHTML = `
+            <div class="flex flex-col gap-2">
+                <p class="flex items-center gap-2">
+                    <span class="font-semibold">Course:</span>
+                    <span class="text-gray-700">${data.course?.name || 'Not specified'}</span>
+                </p>
+                <p class="flex items-center gap-2">
+                    <span class="font-semibold">Course Code:</span>
+                    <span class="text-gray-700">${data.course?.code || 'Not specified'}</span>
+                </p>
+            </div>
+        `;
+
+        // Project Description
+        document.getElementById('projectDescription').textContent = data.description || 'No description available';
+
+        // Team Members
+        const membersContainer = document.getElementById('teamMembers');
+        if (data.team_members && data.team_members.length > 0) {
+            membersContainer.innerHTML = data.team_members.map(member => `
+                <div class="py-4 first:pt-0 last:pb-0">
+                    <a href="/profile/${member.id}" 
+                       class="flex items-center gap-4 hover:bg-gray-50 p-2 rounded-lg transition-all duration-200">
+                        <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                            ${member.name ? member.name[0] : '?'}
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-800">${member.name || 'Unknown'}</h3>
+                            <p class="text-sm text-gray-600">${member.roll_no || 'No Roll No.'}</p>
+                            ${member.internship && data.internship_required ? 
+                                `<p class="text-sm text-blue-600 mt-1">
+                                    <i class="fas fa-briefcase mr-1"></i>
+                                    ${member.internship}
+                                </p>` : ''
+                            }
+                        </div>
+                    </a>
+                </div>
+            `).join('');
+        } else {
+            membersContainer.innerHTML = `
+                <div class="text-gray-600 py-4">
+                    No team members found
+                </div>
+            `;
+        }
+
+        // Project Guide
+        const guideSection = document.getElementById('guideSection');
+        if (data.guide_required) {
+            if (data.guide && data.guide.name) {
+                document.getElementById('projectGuide').innerHTML = `
+                    <a href="/profile/${data.guide.id}" 
+                       class="flex items-center gap-4 hover:bg-gray-50 p-2 rounded-lg transition-all duration-200">
+                        <div class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-xl">
+                            ${data.guide.name[0]}
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">${data.guide.name}</h3>
+                            <p class="text-sm text-gray-600">${data.guide.designation || 'No designation'}</p>
+                        </div>
+                    </a>
+                `;
+            } else {
+                document.getElementById('projectGuide').innerHTML = `
+                    <div class="text-yellow-600 flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Guide not allocated yet
+                    </div>
+                `;
+            }
+        } else {
+            guideSection.classList.add('hidden');
+        }
+
+        // Be Guide Button
+        const beGuideContainer = document.getElementById('beGuideButtonContainer');
+        if (data.show_be_guide_button) {
+            beGuideContainer.innerHTML = `
+                <button onclick="assignGuide(${data.id})" 
+                       class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 
+                              hover:from-green-700 hover:to-green-800 text-white rounded-lg 
+                              shadow-lg hover:shadow-xl transition-all duration-200 
+                              flex items-center gap-2 font-semibold">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Be Guide
+                </button>
+            `;
+        } else {
+            beGuideContainer.innerHTML = '';
+        }
+
+        // Documents and Upload Buttons
+        try {
+            renderDocuments(data.documents || {}, data);
+        } catch (error) {
+            console.error('Error rendering documents:', error);
+            // Provide fallback UI for documents section
+            document.getElementById('documentsSection').innerHTML = `
+                <div class="text-red-600 flex items-center gap-2">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Error loading documents
+                </div>
+            `;
+        }
+
+        // Evaluate Button
+        const evaluateContainer = document.getElementById('evaluateButtonContainer');
+        if (data.show_evaluate) {
+            evaluateContainer.innerHTML = `
+                <a href="/projects/evaluate/${data.id}/" 
+                   class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 
+                          hover:from-blue-700 hover:to-blue-800 text-white rounded-lg 
+                          shadow-lg hover:shadow-xl transition-all duration-200 
+                          flex items-center gap-2 font-semibold">
+                    <i class="fas fa-star"></i>
+                    Evaluate Project
+                </a>
+            `;
+        }
+    }
+
+
+    // Add these utility functions
+    function showLoader() {
+        document.getElementById('uploadLoader').classList.remove('hidden');
+    }
+
+    function hideLoader() {
+        document.getElementById('uploadLoader').classList.add('hidden');
+    }
+
+    function showResponse(success, message) {
+        const popup = document.getElementById('responsePopup');
+        const content = document.getElementById('responseContent');
+        
+        content.innerHTML = `
+            <div class="flex flex-col items-center text-center">
+                <i class="fas fa-${success ? 'check-circle text-green-500' : 'exclamation-circle text-red-500'} text-5xl mb-4"></i>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">
+                    ${success ? 'Success!' : 'Upload Failed'}
+                </h3>
+                <p class="text-gray-600 mb-6">${message}</p>
+                <button onclick="closeResponse()" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200">
+                    Close
+                </button>
+            </div>
+        `;
+        
+        popup.classList.remove('hidden');
+    }
+
+    function closeResponse() {
+        document.getElementById('responsePopup').classList.add('hidden');
+        if (document.getElementById('responseContent').querySelector('.text-green-500')) {
+            // Refresh only on success
+            location.reload();
+        }
+    }
+
+    
+    async function handleFileUpload(event, type) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        
+        if (!file.type.includes('pdf')) {
+            showResponse(false, 'Please upload a PDF file only.');
+            return;
+        }
+
+        
+        if (file.size > 5 * 1024 * 1024) {
+            showResponse(false, 'File size should be less than 5MB.');
+            return;
+        }
+
+        showLoader();
+
+        try {
+            
+            const base64File = await convertFileToBase64(file);
+            
+            const projectId = window.location.pathname.split('/').filter(Boolean).pop();
+            const response = await fetch(`/projects/uploadfile/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    project_id: projectId,
+                    document_type: type,
+                    document: base64File
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) throw new Error(result.error || 'Upload failed');
+
+            showResponse(true, 'Document uploaded successfully! The page will refresh.');
+
+        } catch (error) {
+            console.error('Error:', error);
+            showResponse(false, error.message || 'Failed to upload document. Please try again.');
+        } finally {
+            hideLoader();
+        }
+    }
+
+    // Utility function to convert file to base64
+    function convertFileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Update the documents rendering in renderProjectDetails function
+    function renderDocuments(documents = {}, data) {
+        console.log('Documents:', documents); // Debug log
+        console.log('Data:', data); // Debug log
+
+        const docsContainer = document.getElementById('documentsSection');
+        const uploadContainer = document.getElementById('uploadButtonsContainer');
+
+        // Always define the basic document types
+        const documentTypes = [
+            {
+                type: 'abstract',
+                icon: 'file-pdf',
+                label: 'Project Abstract',
+                url: null
+            },
+            {
+                type: 'report',
+                icon: 'file-alt',
+                label: 'Project Report',
+                url: null
+            }
+        ];
+
+        // Add guide approval form if required
+        if (data.guide_required) {
+            documentTypes.push({
+                type: 'guide_approval_form',
+                icon: 'file-signature',
+                label: 'Guide Approval Form',
+                url: null
+            });
+        }
+
+        // Update URLs if documents exist
+        if (documents) {
+            documentTypes.forEach(doc => {
+                doc.url = documents[doc.type] || null;
+            });
+        }
+
+        // Render document cards
+        docsContainer.innerHTML = documentTypes.map(doc => `
+            <div class="flex flex-col gap-3 p-4 border rounded-lg bg-gray-50">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-${doc.icon} text-2xl text-blue-500"></i>
+                    <span class="font-semibold text-gray-800">${doc.label}</span>
+                </div>
+                <div>
+                    ${doc.url ? `
+                        <a href="${doc.url}" 
+                           target="_blank"
+                           class="w-full download-btn bg-blue-600 hover:bg-blue-700 flex items-center justify-center">
+                            <i class="fas fa-download mr-2"></i>
+                            Download ${doc.type === 'guide_approval_form' ? 'Approval Form' : 
+                                     doc.type === 'abstract' ? 'Abstract' : 'Report'}
+                        </a>
+                    ` : `
+                        <div class="flex items-center justify-center py-2 px-4 bg-gray-200 text-gray-600 rounded-lg">
+                            <i class="fas fa-times-circle mr-2"></i>
+                            Not uploaded yet
+                        </div>
+                    `}
+                </div>
+            </div>
+        `).join('');
+
+        // Render upload buttons if allowed
+        if (data.show_upload_documents) {
+            let uploadButtons = `
+                <label class="download-btn bg-green-600 hover:bg-green-700 cursor-pointer relative">
+                    <i class="fas fa-upload"></i>
+                    <span class="whitespace-nowrap">Upload Abstract</span>
+                    <input type="file" accept="application/pdf" 
+                           onchange="handleFileUpload(event, 'abstract')"
+                           class="hidden">
+                </label>
+                <label class="download-btn bg-green-600 hover:bg-green-700 cursor-pointer relative">
+                    <i class="fas fa-upload"></i>
+                    <span class="whitespace-nowrap">Upload Report</span>
+                    <input type="file" accept="application/pdf" 
+                           onchange="handleFileUpload(event, 'report')"
+                           class="hidden">
+                </label>
+            `;
+
+            // Add guide approval upload button if required
+            if (data.guide_required) {
+                uploadButtons += `
+                    <label class="download-btn bg-green-600 hover:bg-green-700 cursor-pointer relative">
+                        <i class="fas fa-upload"></i>
+                        <span class="whitespace-nowrap">Upload Guide Approval</span>
+                        <input type="file" accept="application/pdf" 
+                               onchange="handleFileUpload(event, 'guide_approval_form')"
+                               class="hidden">
+                    </label>
+                `;
+            }
+
+            uploadContainer.innerHTML = uploadButtons;
+        } else {
+            uploadContainer.innerHTML = ''; // Clear upload buttons if not allowed
+        }
+    }
+
+    // Add the new assignGuide function:
+    async function assignGuide(projectId) {
+        showLoader();
+        try {
+            const response = await fetch('/projects/assignguide/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    project_id: projectId
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to assign as guide');
+            }
+
+            showResponse(true, 'Successfully assigned as guide! The page will refresh.');
+            
+        } catch (error) {
+            console.error('Error:', error);
+            showResponse(false, error.message || 'Failed to assign as guide. Please try again.');
+        } finally {
+            hideLoader();
+        }
+    }
+
+    // Initialize
+    fetchProjectDetails();
+    </script>
+</body>
+</html>

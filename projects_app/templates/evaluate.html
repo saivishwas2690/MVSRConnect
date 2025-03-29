@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluate Project - MVSR Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/e8fec16106.js" crossorigin="anonymous"></script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .nav-link {
+                @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
+                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2;
+            }
+            
+            .card {
+                @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
+                border border-gray-100;
+            }
+            
+            .section-title {
+                @apply text-xl font-bold text-gray-800 mb-4 flex items-center gap-2;
+            }
+
+            .input-marks {
+                @apply w-20 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 
+                       focus:border-blue-500 text-center;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
+            
+            <div class="flex items-center gap-3">
+                {% if request.user.role == "Student" %}
+                    <a href="/projects/createproject/" class="nav-link">
+                        <i class="fas fa-plus-circle"></i>
+                        Create Project
+                    </a>
+                {% elif request.user.role == 'Incharge' %}
+                    <a href="/projects/createcourse/" class="nav-link">
+                        <i class="fas fa-book"></i>
+                        Create Course
+                    </a>
+                {% endif %}
+                <a href="/jobsapi/" class="nav-link">
+                    <i class="fas fa-briefcase"></i>
+                    Jobs
+                </a>
+                <a href="/projects/viewprojects/" class="nav-link">
+                    <i class="fas fa-project-diagram"></i>
+                    Projects
+                </a>
+                <div class="relative group">
+                    <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
+                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                            {{ userdisplay|first }}
+                        </span>
+                        <span>{{ userdisplay }}</span>
+                    </a>
+                </div>
+                <a href="/logout/" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-xl flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+            <p class="mt-4 text-gray-700">Loading project details...</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <div class="card p-6 mb-6">
+            <div class="flex flex-col lg:flex-row justify-between gap-6">
+                <div class="space-y-4">
+                    <h1 id="projectTitle" class="text-3xl font-bold text-gray-800"></h1>
+                    <div class="flex flex-wrap gap-4">
+                        <div id="projectBatch" class="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-400 
+                                                    text-blue-900 rounded-lg font-semibold flex items-center gap-2 
+                                                    shadow-md">
+                        </div>
+                        <div id="projectCourse" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-400 
+                                                     text-white rounded-lg font-semibold flex items-center gap-2 
+                                                     shadow-md">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation Table -->
+        <div class="card p-6">
+            <h2 class="section-title">
+                <i class="fas fa-star text-blue-500"></i>
+                Project Evaluation
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="w-full" id="evaluationTable">
+                    <thead class="bg-gray-50">
+                        <tr id="headerRow">
+                            <th class="p-4 border text-left">Student</th>
+                            <th class="p-4 border text-left">Roll No</th>
+                            <!-- Rubrics will be added dynamically -->
+                            <th class="p-4 border text-center">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="evaluationBody">
+                        <!-- Student rows will be added dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button onclick="saveEvaluation()" 
+                        class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 
+                               transition-all duration-200 flex items-center gap-2">
+                    <i class="fas fa-save"></i>
+                    Save Evaluation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchEvaluationDetails() {
+            try {
+                const projectId = window.location.pathname.split('/').filter(Boolean).pop();
+                const response = await fetch(`/projects/evaluate/${projectId}/`, {
+                    method: 'FETCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch evaluation details');
+                
+                const data = await response.json();
+                renderEvaluationDetails(data);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load evaluation details');
+            } finally {
+                document.getElementById('loadingState').classList.add('hidden');
+            }
+        }
+
+        function renderEvaluationDetails(data) {
+            // Project details
+            document.getElementById('projectTitle').textContent = data.title;
+            document.getElementById('projectBatch').innerHTML = `
+                <i class="fas fa-tag"></i>
+                <span>${data.batch_name}</span>
+            `;
+            document.getElementById('projectCourse').innerHTML = `
+                <i class="fas fa-book"></i>
+                <span>${data.course_name}</span>
+            `;
+
+            // Clear existing header row content first
+            const headerRow = document.getElementById('headerRow');
+            headerRow.innerHTML = `
+                <th class="p-4 border text-left">Student</th>
+                <th class="p-4 border text-left">Roll No</th>
+            `;
+
+            // Add rubric columns
+            const rubricCells = data.rubrics.map(rubric => `
+                <th class="p-4 border text-center">
+                    ${rubric.name}
+                    <div class="text-sm text-gray-500">(${rubric.total_marks})</div>
+                </th>
+            `).join('');
+            headerRow.insertAdjacentHTML('beforeend', rubricCells);
+
+            // Add Total column at the end
+            headerRow.insertAdjacentHTML('beforeend', `
+                <th class="p-4 border text-center">Total</th>
+            `);
+
+            // Add student rows with marks
+            const tbody = document.getElementById('evaluationBody');
+            tbody.innerHTML = data.students.map(student => `
+                <tr class="border-t hover:bg-gray-50">
+                    <td class="p-4 border">${student.name}</td>
+                    <td class="p-4 border">${student.roll_no}</td>
+                    ${data.rubrics.map(rubric => {
+                        // Access marks directly from student.marks object using rubric.id as key
+                        const mark = student.marks[rubric.id] || 0;
+                        return `
+                            <td class="p-4 border text-center">
+                                <input type="number" 
+                                       class="input-marks"
+                                       min="0" 
+                                       max="${rubric.total_marks}"
+                                       data-student="${student.id}"
+                                       data-rubric="${rubric.id}"
+                                       value="${mark}"
+                                       onchange="validateInput(this)"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                >
+                            </td>
+                        `;
+                    }).join('')}
+                    <td class="p-4 border text-center font-bold text-green-600" id="total-${student.id}">0</td>
+                </tr>
+            `).join('');
+
+            // Calculate initial totals for all students
+            data.students.forEach(student => {
+                calculateStudentTotal(student.id);
+            });
+        }
+
+        function validateInput(input) {
+            const value = Number(input.value);
+            const max = Number(input.max);
+            
+            if (value < 0) input.value = 0;
+            if (value > max) input.value = max;
+            
+            // Ensure the value is a valid number
+            if (isNaN(value)) input.value = 0;
+            
+            calculateTotal(input);
+        }
+
+        function calculateTotal(input) {
+            const studentId = input.dataset.student;
+            calculateStudentTotal(studentId);
+        }
+
+        function calculateStudentTotal(studentId) {
+            const inputs = document.querySelectorAll(`input[data-student="${studentId}"]`);
+            const total = Array.from(inputs).reduce((sum, input) => {
+                const value = Number(input.value) || 0;
+                return sum + value;
+            }, 0);
+            
+            const totalCell = document.getElementById(`total-${studentId}`);
+            totalCell.textContent = total;
+            
+            // Update color based on total
+            if (total > 0) {
+                totalCell.classList.add('text-green-600');
+            } else {
+                totalCell.classList.remove('text-green-600');
+            }
+        }
+
+        async function saveEvaluation() {
+            const loadingState = document.getElementById('loadingState');
+            loadingState.querySelector('p').textContent = 'Saving evaluation...';
+            loadingState.classList.remove('hidden');
+
+            try {
+                const projectId = window.location.pathname.split('/').filter(Boolean).pop();
+                const evaluationData = {
+                    project_id: projectId,
+                    marks: []
+                };
+
+                // Collect all marks
+                document.querySelectorAll('#evaluationBody tr').forEach(row => {
+                    const studentId = row.querySelector('input').dataset.student;
+                    const studentMarks = Array.from(row.querySelectorAll('input')).map(input => ({
+                        rubric_id: input.dataset.rubric,
+                        marks: Number(input.value) || 0
+                    }));
+
+                    evaluationData.marks.push({
+                        student_id: studentId,
+                        rubrics: studentMarks
+                    });
+                });
+
+                const response = await fetch(`/projects/evaluate/${projectId}/save/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(evaluationData)
+                });
+
+                if (!response.ok) throw new Error('Failed to save evaluation');
+
+                alert('Evaluation saved successfully!');
+                window.location.href = `/projects/${projectId}`;
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to save evaluation');
+            } finally {
+                loadingState.classList.add('hidden');
+            }
+        }
+
+        // Initialize
+        fetchEvaluationDetails();
+    </script>
+</body>
+</html>

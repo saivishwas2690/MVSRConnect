@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobs - MVSR Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/e8fec16106.js" crossorigin="anonymous"></script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .nav-link {
+                @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
+                hover:bg-yellow-400 hover:text-blue-900;
+            }
+            
+            .job-card {
+                @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
+                border border-gray-100 overflow-hidden;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
+
+            
+            <div class="flex items-center gap-3">
+                {% if request.user.role == "Student" %}
+                    <a href="/projects/createproject/" class="nav-link">Create Project</a>
+                {% elif request.user.role == 'Incharge' %}
+                    <a href="/projects/createcourse/" class="nav-link">Create Course</a>
+                {% endif %}
+                <a href="/jobsapi/" class="nav-link">Jobs</a>
+                <a href="/projects/viewprojects/" class="nav-link">Projects</a>
+                <div class="relative group">
+                    <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
+                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                            {{ userdisplay|first }}
+                        </span>
+                        <span>{{ userdisplay }}</span>
+                    </a>
+                </div>
+                <a href="/logout/" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="fixed inset-0 bg-blue-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-xl">
+            <div class="flex flex-col items-center">
+                <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+                <p class="text-gray-700">Loading jobs...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-white">Software Jobs</h1>
+            <div class="flex gap-2">
+                <button onclick="fetchJobs()" class="nav-link flex items-center gap-2">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="jobsContainer">
+            <!-- Jobs will be populated here dynamically -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchJobs();
+        });
+
+        async function fetchJobs() {
+            const loadingState = document.getElementById('loadingState');
+            loadingState.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/jobsapi/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const jobsContainer = document.getElementById('jobsContainer');
+                
+                if (!data || data.length === 0) {
+                    jobsContainer.innerHTML = `
+                        <div class="col-span-full text-center py-12">
+                            <div class="bg-white/10 rounded-xl p-8 backdrop-blur-sm">
+                                <i class="fas fa-briefcase text-4xl text-yellow-500 mb-4"></i>
+                                <h3 class="text-xl font-bold text-white mb-2">No Jobs Available</h3>
+                                <p class="text-gray-300">Check back later for new opportunities</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                jobsContainer.innerHTML = data.map(job => createJobCard(job)).join('');
+
+            } catch (error) {
+                console.error('Error:', error);
+                const jobsContainer = document.getElementById('jobsContainer');
+                jobsContainer.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <div class="bg-red-500/10 rounded-xl p-8 backdrop-blur-sm">
+                            <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
+                            <h3 class="text-xl font-bold text-white mb-2">Error Loading Jobs</h3>
+                            <p class="text-gray-300">Please try again later</p>
+                        </div>
+                    </div>
+                `;
+            } finally {
+                loadingState.classList.add('hidden');
+            }
+        }
+
+        function createJobCard(job) {
+            const postedDate = new Date(job.posted_date).toLocaleDateString();
+            
+            return `
+                <div class="job-card group">
+                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-yellow-500 text-blue-900 text-xl font-bold 
+                                      rounded-full flex items-center justify-center">
+                                ${job.company[0]}
+                            </div>
+                            <div class="text-white">
+                                <h2 class="font-semibold text-lg">${job.company}</h2>
+                                <p class="text-sm text-blue-100">${postedDate}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Job Title</p>
+                            <p class="font-semibold text-gray-800">${job.title}</p>
+                        </div>
+
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Location</p>
+                            <p class="font-semibold text-gray-800">${job.location}</p>
+                        </div>
+
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Description</p>
+                            <p class="text-gray-600 text-sm line-clamp-3">${job.description}</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 border-t border-gray-100">
+                        <a href="${job.url}" target="_blank" 
+                           class="block w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 
+                                  text-white text-center rounded-lg transition-colors duration-200">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            Apply Now
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

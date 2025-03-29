@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Professor Profile - MVSRConnect</title>
+</head>
+<body class="bg-blue-900">
+    <!-- Navbar -->
+    <nav class="bg-blue-950 w-full h-auto px-3 py-3 flex justify-between items-center">
+        <h1 class="text-xl sm:text-yellow-500 sm:font-bold md:text-xl md:font-bold md:text-yellow-500 lg:text-2xl lg:text-yellow-500 lg:font-bold">MVSR Connect</h1>
+        <div class="flex gap-1">
+            <a href="#" class="bg-yellow-500 sm:py-1 sm:px-2 sm:font-bold sm:rounded-sm md:rounded-sm md:px-3 md:py-2 md:font-bold lg:rounded-sm lg:py-2 lg:px-6 lg:font-bold">Projects</a>
+            <a href="#" class="bg-yellow-500 sm:py-1 sm:px-2 sm:font-bold sm:rounded-sm md:rounded-sm md:px-3 md:py-2 md:font-bold lg:rounded-sm lg:py-2 lg:px-6 lg:font-bold">FAC123456</a>
+        </div>
+    </nav>
+
+    <!-- Profile Content -->
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-5">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Professor Profile</h1>
+            <a href="{% url 'edit_professor_profile' %}" class="bg-blue-500 text-white px-4 py-2 rounded">Edit Profile</a>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Personal Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p><strong>Name:</strong> Dr. Jane Doe</p>
+                </div>
+                <div>
+                    <p><strong>Faculty ID:</strong> FAC123456</p>
+                </div>
+                <div>
+                    <p><strong>Email:</strong> jane.doe@mvsr.edu.in</p>
+                </div>
+                <div>
+                    <p><strong>Contact Number:</strong> +91 9876543210</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Information -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Academic Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p><strong>Department:</strong> Computer Science and Engineering</p>
+                </div>
+                <div>
+                    <p><strong>Designation:</strong> Associate Professor</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Research Interests -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Research Interests</h2>
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <p><strong>Areas of Interest:</strong> Artificial Intelligence, Data Science</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Courses Taught -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Courses Taught</h2>
+            <div id="courses-taught">
+                <!-- Course 1 -->
+                <div class="mb-4 p-4 border rounded-lg bg-gray-50">
+                    <p><strong>Course Name:</strong> Artificial Intelligence</p>
+                    <p><strong>Course Code:</strong> CSE301</p>
+                </div>
+                <!-- Course 2 -->
+                <div class="mb-4 p-4 border rounded-lg bg-gray-50">
+                    <p><strong>Course Name:</strong> Web Development</p>
+                    <p><strong>Course Code:</strong> CSE302</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Publications -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Publications</h2>
+            <div id="publications">
+                <!-- Publication 1 -->
+                <div class="mb-4 p-4 border rounded-lg bg-gray-50">
+                    <p><strong>Title:</strong> A Study on Machine Learning Algorithms</p>
+                    <p><strong>Journal:</strong> International Journal of Computer Science</p>
+                    <p><strong>Year:</strong> 2022</p>
+                </div>
+                <!-- Publication 2 -->
+                <div class="mb-4 p-4 border rounded-lg bg-gray-50">
+                    <p><strong>Title:</strong> Deep Learning for Image Recognition</p>
+                    <p><strong>Journal:</strong> IEEE Transactions on Neural Networks</p>
+                    <p><strong>Year:</strong> 2021</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Guided -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Projects Guided</h2>
+            <div id="projects-guided">
+                <!-- Project 1 -->
+                <div class="mb-4 p-4 border rounded-lg bg-gray-50">
+                    <p><strong>Project Name:</strong> Sentiment Analysis using NLP</p>
+                    
+                    <p><strong>Batch Number:</strong>C17</p>
+                    <p><strong>Course Name:</strong> Artificial Intelligence</p>
+                    <p><strong>Course ID:</strong> CSE301</p>
+                    <p><strong>Year:</strong> 2023</p>
+                </div>
+                <!-- Project 2 -->
+                <div class="mb-4 p-4 border rounded-lg bg-gray-50">
+                    <p><strong>Project Name:</strong> E-Commerce Website</p>
+                    
+                    <p><strong>Batch Number:</strong>C18</p>
+                    <p><strong>Course Name:</strong> Web Development</p>
+                    <p><strong>Course ID:</strong> CSE302</p>
+                    <p><strong>Year:</strong> 2022</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Links -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Social Links</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p><strong>LinkedIn:</strong> <a href="#" class="text-blue-500">linkedin.com/in/janedoe</a></p>
+                </div>
+                <div>
+                    <p><strong>Google Scholar:</strong> <a href="#" class="text-blue-500">scholar.google.com/janedoe</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

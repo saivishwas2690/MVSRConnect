@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Modern Divi Style</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'divi-purple': '#6C2EB9',
+            'divi-purple-dark': '#5B28A7',
+            'divi-teal': '#2EA3F2',
+            'divi-teal-dark': '#0C71C3',
+          },
+          boxShadow: {
+            'divi': '0 12px 18px -6px rgba(0, 0, 0, 0.1)',
+            'divi-hover': '0 6px 18px -6px rgba(0, 0, 0, 0.3)',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    .animate-fadeIn {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    
+    .animate-slideInLeft {
+      animation: slideInLeft 0.4s ease-out forwards;
+    }
+    
+    .animate-slideInRight {
+      animation: slideInRight 0.4s ease-out forwards;
+    }
+    
+    .form-container {
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%236C2EB9' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    .input-field:focus-within {
+      border-color: #eab308;
+      box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.2);
+    }
+    
+    .btn-primary {
+      background-image: linear-gradient(135deg, #1e40af, #eab308);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(234, 179, 8, 0.2);
+    }
+
+    .btn-secondary {
+      background-image: linear-gradient(135deg, #eab308, #1e40af);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(234, 179, 8, 0.2);
+    }
+    
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 200px;
+      height: 34px;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+    
+    .switch input:checked + .slider {
+      background-image: linear-gradient(to right, #6C2EB9, #2EA3F2);
+    }
+    
+    .switch input:checked + .slider:before {
+      transform: translateX(166px);
+    }
+    
+    .slider-text {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+      color: white;
+      font-weight: 500;
+      z-index: 0;
+    }
+    
+    /* Loader */
+    .loader {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid white;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: none;
+      margin: 0 auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading .btn-text {
+      display: none;
+    }
+    
+    .loading .loader {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-900 to-blue-700 min-h-screen">
+
+  <!-- Banner Section -->
+  <div class="relative h-96 w-full overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-900/90 to-blue-800/90 flex items-center">
+      <div class="container mx-auto px-6 text-white">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4 animate-fadeIn">Welcome to <span class="text-yellow-500">MVSR Connect</span></h1>
+        <p class="text-xl md:text-2xl max-w-2xl animate-fadeIn" style="animation-delay: 0.2s">
+          Connecting Students, Faculty, and Industry for Better Academic Collaboration
+        </p>
+        <div class="mt-8 animate-fadeIn" style="animation-delay: 0.4s">
+          <a href="#auth-container" class="bg-yellow-500 text-blue-900 px-6 py-3 rounded-lg font-medium hover:bg-yellow-400 transition-colors inline-flex items-center">
+            <i class="fas fa-arrow-down mr-2"></i> Get Started
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Features Section -->
+  <div class="bg-blue-50 py-16">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-blue-900">Why MVSR Connect?</h2>
+        <p class="text-blue-700 mt-2">Your all-in-one platform for academic excellence</p>
+      </div>
+      
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- Student Features -->
+        <div class="bg-white/90 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-l-4 border-yellow-500">
+          <div class="bg-gradient-to-r from-blue-700 to-blue-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-user-graduate text-yellow-500 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2">For Students</h3>
+          <ul class="text-gray-600 space-y-2">
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Create and showcase projects</li>
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Access job opportunities</li>
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Collaborate with peers</li>
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Track academic progress</li>
+          </ul>
+        </div>
+        
+        <!-- Faculty Features -->
+        <div class="bg-white/90 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-l-4 border-yellow-500">
+          <div class="bg-gradient-to-r from-blue-700 to-blue-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-chalkboard-teacher text-yellow-500 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2">For Faculty</h3>
+          <ul class="text-gray-600 space-y-2">
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Manage course projects</li>
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Post job opportunities</li>
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Guide student projects</li>
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Track student progress</li>
+          </ul>
+        </div>
+        
+        <!-- Industry Connect -->
+        <div class="bg-white/90 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-l-4 border-yellow-500">
+          <div class="bg-gradient-to-r from-blue-700 to-blue-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-building text-yellow-500 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2">Industry Connect</h3>
+          <ul class="text-gray-600 space-y-2">
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Job postings</li>
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Industry projects</li>
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Internship opportunities</li>
+            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Industry collaboration</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Key Features Section -->
+  <div class="bg-blue-900 py-16">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-white">Platform Features</h2>
+        <p class="text-yellow-500 mt-2">Everything you need for academic success</p>
+      </div>
+      
+      <div class="grid md:grid-cols-4 gap-6">
+        <!-- Project Management -->
+        <div class="bg-blue-800/50 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all border border-blue-700">
+          <i class="fas fa-tasks text-yellow-500 text-3xl mb-4"></i>
+          <h3 class="font-semibold text-white">Project Management</h3>
+          <p class="text-blue-100 text-sm mt-2">Create, track, and showcase academic projects</p>
+        </div>
+        
+        <!-- Job Portal -->
+        <div class="bg-blue-800/50 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all border border-blue-700">
+          <i class="fas fa-briefcase text-yellow-500 text-3xl mb-4"></i>
+          <h3 class="font-semibold text-white">Job Portal</h3>
+          <p class="text-blue-100 text-sm mt-2">Access exclusive job opportunities</p>
+        </div>
+        
+        <!-- Collaboration -->
+        <div class="bg-blue-800/50 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all border border-blue-700">
+          <i class="fas fa-users text-yellow-500 text-3xl mb-4"></i>
+          <h3 class="font-semibold text-white">Collaboration</h3>
+          <p class="text-blue-100 text-sm mt-2">Work together on projects and research</p>
+        </div>
+        
+        <!-- Resource Sharing -->
+        <div class="bg-blue-800/50 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all border border-blue-700">
+          <i class="fas fa-share-alt text-yellow-500 text-3xl mb-4"></i>
+          <h3 class="font-semibold text-white">Resource Sharing</h3>
+          <p class="text-blue-100 text-sm mt-2">Share and access academic resources</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Container -->
+  <div id="auth-container" class="py-16 bg-blue-800">
+    <div class="container mx-auto px-6">
+      <div class="max-w-md mx-auto mb-8 text-center">
+        <h2 class="text-3xl font-bold text-white mb-2">Account Access</h2>
+        <p class="text-yellow-500">Login to your account or create a new one</p>
+        
+        <!-- Toggle Switch -->
+        <div class="mt-8 mb-10">
+          <label class="switch mx-auto">
+            <input type="checkbox" id="form-toggle">
+            <span class="slider"></span>
+            <div class="slider-text">
+              <span id="login-text" class="font-medium">Login</span>
+              <span id="signup-text" class="font-medium">Signup</span>
+            </div>
+          </label>
+        </div>
+      </div>
+      
+      <div class="w-full max-w-md mx-auto form-container bg-blue-900/90 rounded-2xl shadow-xl overflow-hidden animate-fadeIn border border-blue-700">
+        <!-- Header with decorative bar -->
+        <div class="h-2 bg-gradient-to-r from-blue-700 to-yellow-500"></div>
+        
+        <div class="p-8">
+          <!-- Login Form -->
+          <div id="login-form-container" class="animate-slideInLeft">
+            <div class="flex justify-center mb-6">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-700 to-yellow-500 flex items-center justify-center shadow-md">
+                <i class="fas fa-user-circle text-white text-2xl"></i>
+              </div>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-center text-white mb-6">Welcome Back</h2>
+            
+            <form id="login-form" action="/login/" method="post" class="space-y-5">
+              {% csrf_token %}
+              
+              <div class="input-field relative border border-blue-700 rounded-lg overflow-hidden transition-all duration-300 bg-blue-800/50">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i class="fas fa-envelope text-gray-400"></i>
+                </div>
+                <input type="email" name="email" placeholder="Email Address" class="block w-full pl-10 pr-3 py-3 border-0 focus:ring-0 focus:outline-none text-gray-600" required />
+              </div>
+              
+              <div class="input-field relative border border-blue-700 rounded-lg overflow-hidden transition-all duration-300 bg-blue-800/50">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i class="fas fa-lock text-gray-400"></i>
+                </div>
+                <input type="password" name="password" placeholder="Password" class="block w-full pl-10 pr-3 py-3 border-0 focus:ring-0 focus:outline-none text-gray-600" required />
+              </div>
+              
+              <button type="submit" id="login-button" class="btn-primary w-full py-3 rounded-lg text-white font-medium shadow-lg relative">
+                <span class="btn-text">Sign In</span>
+                <div class="loader"></div>
+              </button>
+            </form>
+            
+            <div class="mt-4 text-center">
+              <a href="#" class="text-sm text-divi-teal hover:text-divi-teal-dark transition-colors">
+                Forgot Password?
+              </a>
+            </div>
+          </div>
+
+          <!-- Signup Section -->
+          <div id="signup-form-container" class="hidden animate-slideInRight">
+            <div class="flex justify-center mb-6">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-r from-divi-teal to-divi-purple flex items-center justify-center shadow-md">
+                <i class="fas fa-user-plus text-white text-2xl"></i>
+              </div>
+            </div>
+            
+            <h3 class="text-2xl font-bold text-center text-gray-800 mb-6">Create Account</h3>
+            
+            <form id="signup-form" class="space-y-5">
+              <div class="input-field relative border border-gray-300 rounded-lg overflow-hidden transition-all duration-300">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i class="fas fa-at text-gray-400"></i>
+                </div>
+                <input type="email" id="signup-email" placeholder="Your Email Address" class="block w-full pl-10 pr-3 py-3 border-0 focus:ring-0 focus:outline-none text-gray-600" required />
+              </div>
+              
+              <button type="button" id="verify-btn" class="btn-secondary w-full py-3 rounded-lg text-white font-medium shadow-lg relative">
+                <span class="btn-text"><i class="fas fa-paper-plane mr-2"></i> Send Verification Link</span>
+                <div class="loader"></div>
+              </button>
+              
+              <div id="message-container" class="rounded-lg p-4 hidden">
+                <p id="message" class="text-sm text-center"></p>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 text-center">
+          <p class="text-sm text-gray-600">
+            <a href="#" class="text-divi-teal hover:text-divi-teal-dark transition-colors">Need Help?</a> • 
+            <a href="#" class="text-divi-teal hover:text-divi-teal-dark transition-colors">Privacy Policy</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <footer class="bg-blue-950 text-white py-8">
+    <div class="container mx-auto px-6">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <h3 class="text-xl font-bold text-yellow-500">MVSR Connect</h3>
+          <p class="text-gray-400">Empowering Academic Excellence</p>
+        </div>
+        
+        <div class="flex space-x-4">
+          <a href="#" class="h-10 w-10 rounded-full bg-blue-800 flex items-center justify-center hover:bg-yellow-500 transition-colors">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="#" class="h-10 w-10 rounded-full bg-blue-800 flex items-center justify-center hover:bg-yellow-500 transition-colors">
+            <i class="fab fa-twitter"></i>
+          </a>
+          <a href="#" class="h-10 w-10 rounded-full bg-blue-800 flex items-center justify-center hover:bg-yellow-500 transition-colors">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="border-t border-blue-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+        <p>&copy; 2024 MVSR Engineering College. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Toggle between login and signup forms
+    const formToggle = document.getElementById('form-toggle');
+    const loginFormContainer = document.getElementById('login-form-container');
+    const signupFormContainer = document.getElementById('signup-form-container');
+    const loginText = document.getElementById('login-text');
+    const signupText = document.getElementById('signup-text');
+    
+    formToggle.addEventListener('change', function() {
+      if (this.checked) {
+        // Show signup form
+        loginFormContainer.classList.add('hidden');
+        setTimeout(() => {
+          signupFormContainer.classList.remove('hidden');
+        }, 100);
+        loginText.style.fontWeight = '400';
+        signupText.style.fontWeight = '600';
+      } else {
+        // Show login form
+        signupFormContainer.classList.add('hidden');
+        setTimeout(() => {
+          loginFormContainer.classList.remove('hidden');
+        }, 100);
+        loginText.style.fontWeight = '600';
+        signupText.style.fontWeight = '400';
+      }
+    });
+
+    // Login form submission with loader
+    const loginForm = document.getElementById('login-form');
+    const loginButton = document.getElementById('login-button');
+    
+    loginForm.addEventListener('submit', function(e) {
+      // Don't add e.preventDefault() here to allow the actual form submission
+      // But add the loading state
+      loginButton.classList.add('loading');
+      // Form will submit normally (for demo purposes we just show the loader)
+    });
+
+    // Signup email verification with loader
+    document.getElementById("verify-btn").addEventListener("click", async () => {
+      const email = document.getElementById("signup-email").value;
+      console.log(email);
+      const message = document.getElementById("message");
+      const messageContainer = document.getElementById("message-container");
+      const verifyBtn = document.getElementById("verify-btn");
+
+      if (!email) {
+        message.textContent = "Please enter an email address";
+        message.className = "text-sm text-center text-red-500";
+        messageContainer.className = "rounded-lg p-4 bg-red-50 border border-red-100";
+        messageContainer.classList.remove("hidden");
+        return;
+      }
+
+      // Show loading state
+      verifyBtn.classList.add('loading');
+      
+      message.textContent = "Sending verification email...";
+      message.className = "text-sm text-center text-gray-600";
+      messageContainer.className = "rounded-lg p-4 bg-gray-50 border border-gray-100";
+      messageContainer.classList.remove("hidden");
+
+      try {
+        const response = await fetch("/verify-email/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+          },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await response.json();
+        
+        // Hide loading state
+        setTimeout(() => {
+          verifyBtn.classList.remove('loading');
+          
+          if (data.success) {
+            message.textContent = "Verification link sent! Check your email.";
+            message.className = "text-sm text-center text-green-600";
+            messageContainer.className = "rounded-lg p-4 bg-green-50 border border-green-100";
+          } else {
+            message.textContent = data.error;
+            message.className = "text-sm text-center text-red-500";
+            messageContainer.className = "rounded-lg p-4 bg-red-50 border border-red-100";
+          }
+        }, 1500); // Simulate network delay for demo
+      } catch (error) {
+        // Handle fetch errors
+        setTimeout(() => {
+          verifyBtn.classList.remove('loading');
+          message.textContent = "Network error. Please try again later.";
+          message.className = "text-sm text-center text-red-500";
+          messageContainer.className = "rounded-lg p-4 bg-red-50 border border-red-100";
+        }, 1500);
+      }
+    });
+
+    // Add focus effects to form fields
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+      input.addEventListener('focus', function() {
+        this.closest('.input-field').classList.add('border-divi-teal');
+      });
+      
+      input.addEventListener('blur', function() {
+        this.closest('.input-field').classList.remove('border-divi-teal');
+      });
+    });
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+  </script>
+</body>
+</html>

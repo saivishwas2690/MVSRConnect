@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile - MVSR Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/e8fec16106.js" crossorigin="anonymous"></script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .nav-link {
+                @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
+                hover:bg-yellow-400 hover:text-blue-900;
+            }
+            
+            .card {
+                @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
+                border border-gray-100;
+            }
+            
+            .section-title {
+                @apply text-xl font-bold text-gray-800 mb-4 flex items-center gap-2;
+            }
+
+            .project-card {
+                @apply border rounded-lg p-4 hover:bg-gray-50 transition-all duration-200;
+            }
+
+            .tag {
+                @apply px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
+            
+            <div class="flex items-center gap-3">
+                {% if request.user.role == "Student" %}
+                    <a href="/projects/createproject/" class="nav-link">Create Project</a>
+                {% elif request.user.role == 'Incharge' %}
+                    <a href="/projects/createcourse/" class="nav-link">Create Course</a>
+                {% endif %}
+                <a href="/jobsapi/" class="nav-link">Jobs</a>
+                <a href="/projects/viewprojects/" class="nav-link">Projects</a>
+                <div class="relative group">
+                    <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
+                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                            {{ userdisplay|first }}
+                        </span>
+                        <span>{{ userdisplay }}</span>
+                    </a>
+                </div>
+                <a href="/logout/" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="fixed inset-0 bg-blue-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-xl">
+            <div class="flex flex-col items-center">
+                <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+                <p class="text-gray-700">Loading profile...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="space-y-6">
+                <!-- Profile Overview -->
+                <div class="card p-6">
+                    <!-- Profile Header with Edit Button -->
+                    
+
+                    <!-- Profile Content -->
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full 
+                                  flex items-center justify-center text-4xl text-white font-bold shadow-lg">
+                            <span id="profileInitial"></span>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold text-gray-800" id="fullName"></h2>
+                            <p class="text-gray-600" id="rollNo"></p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500" id="email"></p>
+                                {% if request.user.id|stringformat:"s" in request.path %}
+                                <a href="/editprofile/" 
+                                   class="p-1.5 bg-yellow-500 hover:bg-yellow-600 text-blue-900 
+                                          rounded-lg transition-all duration-200 flex items-center justify-center
+                                          shadow-md hover:shadow-lg group relative">
+                                    <i class="fas fa-edit"></i>
+                                    <!-- Tooltip -->
+                                    <span class="absolute -top-12 left-1/2 -translate-x-1/2 
+                                                 bg-gray-900 text-white px-3 py-1.5 rounded-lg text-sm
+                                                 opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                                                 whitespace-nowrap pointer-events-none">
+                                        Edit your profile details
+                                        <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 
+                                                   border-4 border-transparent border-t-gray-900"></span>
+                                    </span>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Section -->
+                    <div class="mt-6">
+                        <h3 class="section-title">
+                            <i class="fas fa-code text-blue-500"></i>
+                            Skills
+                        </h3>
+                        <div id="skillsContainer" class="flex flex-wrap gap-2">
+                            <!-- Skills will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Interests Section -->
+                    <div class="mt-6">
+                        <h3 class="section-title">
+                            <i class="fas fa-star text-blue-500"></i>
+                            Interests
+                        </h3>
+                        <div id="interestsContainer" class="flex flex-wrap gap-2">
+                            <!-- Interests will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Social Links -->
+                    <div class="mt-6">
+                        <h3 class="section-title">
+                            <i class="fas fa-link text-blue-500"></i>
+                            Social Links
+                        </h3>
+                        <div id="socialLinksContainer" class="space-y-2">
+                            <!-- Social links will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Academic Projects -->
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="section-title mb-0">
+                            <i class="fas fa-graduation-cap text-blue-500"></i>
+                            Academic Projects
+                        </h3>
+                        <!-- <a href="/projects/viewprojects/" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm flex items-center gap-2">
+                            <i class="fas fa-external-link-alt"></i>
+                            View All Projects
+                        </a> -->
+                    </div>
+                    <div id="academicProjectsContainer" class="space-y-4">
+                        <!-- Academic projects will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Personal Projects -->
+                <div class="card p-6">
+                    <h3 class="section-title">
+                        <i class="fas fa-laptop-code text-blue-500"></i>
+                        Personal Projects
+                    </h3>
+                    <div id="personalProjectsContainer" class="space-y-4">
+                        <!-- Personal projects will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchStudentProfile() {
+            const loadingState = document.getElementById('loadingState');
+            loadingState.classList.remove('hidden');
+
+            try {
+                const urlParts = window.location.pathname.split('/');
+                const userId = urlParts[urlParts.length - 2];
+
+                const response = await fetch(`/profile/${userId}/`, {
+                    method: 'FETCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Handle missing or null data with defaults
+                document.getElementById('profileInitial').textContent = 
+                    data.name ? data.name[0].toUpperCase() : '?';
+                document.getElementById('fullName').textContent = 
+                    data.name || 'Name not available';
+                document.getElementById('rollNo').textContent = 
+                    data.roll_no || 'Roll number not available';
+                document.getElementById('email').textContent = 
+                    data.email || 'Email not available';
+
+                // Render sections with null checks
+                renderSkills(data.skills);
+                renderInterests(data.interests);
+                renderSocialLinks(data.social_links);
+                renderAcademicProjects(data.academic_projects);
+                renderPersonalProjects(data.personal_projects);
+
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                // Show error message to user
+                const mainContent = document.querySelector('.max-w-7xl');
+                mainContent.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+                        <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
+                        <h3 class="text-xl font-bold text-red-800 mb-2">Error Loading Profile</h3>
+                        <p class="text-red-600">There was a problem loading the profile. Please try again later.</p>
+                    </div>
+                `;
+            } finally {
+                loadingState.classList.add('hidden');
+            }
+        }
+
+        function renderSkills(skills) {
+            const container = document.getElementById('skillsContainer');
+            if (!skills || skills.length === 0) {
+                container.innerHTML = `
+                    <div class="text-gray-500 italic text-sm flex items-center gap-2">
+                        <i class="fas fa-info-circle"></i>
+                        No skills added yet
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = skills.map(skill => `
+                <span class="tag">${skill.name}</span>
+            `).join('');
+        }
+
+        function renderInterests(interests) {
+            const container = document.getElementById('interestsContainer');
+            if (!interests || interests.length === 0) {
+                container.innerHTML = `
+                    <div class="text-gray-500 italic text-sm flex items-center gap-2">
+                        <i class="fas fa-info-circle"></i>
+                        No interests added yet
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = interests.map(interest => `
+                <span class="tag">${interest.name}</span>
+            `).join('');
+        }
+
+        function renderSocialLinks(links) {
+            const container = document.getElementById('socialLinksContainer');
+            if (!links || links.length === 0) {
+                container.innerHTML = `
+                    <div class="text-gray-500 italic text-sm flex items-center gap-2">
+                        <i class="fas fa-info-circle"></i>
+                        No social links added yet
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = links.map(link => `
+                <a href="${link.url}" target="_blank" 
+                   class="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors">
+                    <i class="fab fa-${link.platform.toLowerCase()}"></i>
+                    ${link.platform}
+                </a>
+            `).join('');
+        }
+
+        function renderAcademicProjects(projects) {
+            const container = document.getElementById('academicProjectsContainer');
+            if (!projects || projects.length === 0) {
+                container.innerHTML = `
+                    <div class="text-gray-500 italic text-sm flex items-center gap-2">
+                        <i class="fas fa-info-circle"></i>
+                        No academic projects yet
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = projects.map(project => `
+                <div class="project-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold text-lg">${project.title}</h4>
+                        <a href="/projects/${project.id}/" 
+                           class="text-blue-600 hover:text-blue-800 transition-colors">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-600">Course</p>
+                            <p class="font-medium">${project.course_name || 'Not specified'}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Course ID</p>
+                            <p class="font-medium">${project.course_id || 'Not specified'}</p>
+                        </div>
+                        <div>
+                            ${project.guide_required ? `
+                                <p class="text-gray-600">Guide</p>
+                                <p class="font-medium">${project.guide_name || 'Not allocated yet'}</p>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPersonalProjects(projects) {
+            const container = document.getElementById('personalProjectsContainer');
+            if (!projects || projects.length === 0) {
+                container.innerHTML = `
+                    <div class="text-gray-500 italic text-sm flex items-center gap-2">
+                        <i class="fas fa-info-circle"></i>
+                        No personal projects added yet
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = projects.map(project => `
+                <div class="project-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-lg">${project.title}</h4>
+                            <p class="text-gray-600 mt-1">${project.description || 'No description provided'}</p>
+                        </div>
+                        ${project.link ? `
+                            <a href="${project.link}" target="_blank" 
+                               class="text-blue-600 hover:text-blue-800 transition-colors">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize
+        fetchStudentProfile();
+    </script>
+</body>
+</html>

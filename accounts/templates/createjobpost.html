@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Job Post</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        form { max-width: 400px; margin: auto; display: flex; flex-direction: column; }
+        input, textarea, button { margin: 10px 0; padding: 10px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h2>Create a Job Post</h2>
+    <form id="jobPostForm">
+        <input type="text" id="company" placeholder="Company Name" required>
+        <input type="text" id="jobrole" placeholder="Job Role" required>
+        <textarea id="content" placeholder="Job Description" required></textarea>
+        <input type="text" id="link" placeholder="Application Link (optional)">
+        <button type="submit">Submit</button>
+    </form>
+    <p id="message"></p>
+
+    <script>
+        document.getElementById('jobPostForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const company = document.getElementById('company').value;
+            const jobrole = document.getElementById('jobrole').value;
+            const content = document.getElementById('content').value;
+            const link = document.getElementById('link').value;
+
+            const response = await fetch('createjobpost/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer YOUR_ACCESS_TOKEN' // Replace with actual token if needed
+                },
+                body: JSON.stringify({
+                    company, jobrole, content, link
+                })
+            });
+
+            const result = await response.json();
+            document.getElementById('message').innerText = response.ok ? 'Job post created!' : 'Error: ' + result.error;
+        });
+    </script>
+</body>
+</html>

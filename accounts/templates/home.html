@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVSR Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/e8fec16106.js" crossorigin="anonymous"></script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .nav-link {
+                @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
+                hover:bg-yellow-400 hover:text-blue-900;
+            }
+            
+            .card {
+                @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
+                border border-gray-100;
+            }
+            
+            .button-primary {
+                @apply bg-yellow-500 hover:bg-yellow-400 text-blue-900 font-semibold px-6 py-2 
+                rounded-lg transition-all duration-200 hover:shadow-lg;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1>
+            
+            <div class="flex items-center gap-3">
+                {% if request.user.role == "Student" %}
+                    <a href="projects/createproject/" class="nav-link">Create Project</a>
+                {% elif request.user.role == 'Incharge' %}
+                    <a href="projects/createcourse/" class="nav-link">Create Course</a>
+                    <a href="projects/courses/" class="nav-link">View Courses</a>
+                {% endif %}
+                <a href="/jobsapi/" class="nav-link">Jobs</a>
+                <a href="/projects/viewprojects/" class="nav-link">Projects</a>
+                <div class="relative group">
+                    <a href="profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
+                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                            {{ userdisplay|first }}
+                        </span>
+                        <span>{{ userdisplay }}</span>
+                    </a>
+                </div>
+                <a href="/logout/" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-6 flex gap-6">
+        <!-- Jobs Feed -->
+        <div class="flex-1">
+            <div id="jobsContainer" class="space-y-6"></div>
+            <div class="text-center my-8">
+                <button id="loadMoreBtn" class="button-primary">
+                    <span class="loading-text">Load More</span>
+                    <span class="loading-spinner hidden">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="w-80 space-y-6">
+            <!-- Search Box -->
+            <div class="card p-4">
+                <div class="relative">
+                    <input type="text" 
+                           id="userSearch" 
+                           placeholder="Find User" 
+                           class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200" />
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    
+                    <!-- Updated search results container with absolute positioning and scroll -->
+                    <div id="searchResults" 
+                         class="absolute left-0 right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 max-h-60 overflow-y-auto hidden z-50">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Latest News -->
+            <div class="card p-4">
+                <h2 class="text-xl font-bold mb-4 text-blue-900">Latest News</h2>
+                <div id="newsContainer" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+let currentPage = 1;
+const jobsPerPage = 5;
+let hasMoreJobs = true;
+
+// Fetch Jobs
+async function fetchJobs(page) {
+    try {
+        const response = await fetch(`/getjobposts/${page}`);
+        if (!response.ok) throw new Error('Failed to fetch jobs');
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
+
+// Render Job Card
+function renderJobCard(job) {
+    return `
+        <div class="card hover:scale-[1.01] transition-all duration-200">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-5 rounded-t-xl">
+                <div class="flex items-center gap-4">
+                    <a href="/profile/${job.author_id}" class="flex items-center gap-4 hover:opacity-90">
+                        <div class="w-12 h-12 bg-white text-blue-900 rounded-full flex items-center justify-center text-xl font-bold">
+                            ${job.author[0]}
+                        </div>
+                        <div class="text-white">
+                            <h3 class="font-bold text-lg">${job.author}</h3>
+                            <p class="text-sm opacity-90">${new Date(job.created_at).toLocaleDateString()}</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm text-gray-600">Company</label>
+                        <p class="font-semibold text-lg">${job.company}</p>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600">Job Title</label>
+                        <p class="font-semibold text-lg">${job.jobrole}</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="text-sm text-gray-600">Description</label>
+                    <p class="mt-1">${job.content}</p>
+                </div>
+                
+                <div class="flex justify-end pt-4">
+                    <a href="${job.link}" target="_blank" 
+                       class="button-primary inline-flex items-center gap-2">
+                        Apply Now
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Load More Handler
+document.getElementById('loadMoreBtn').addEventListener('click', async () => {
+    const button = document.getElementById('loadMoreBtn');
+    button.disabled = true;
+    button.querySelector('.loading-text').classList.add('hidden');
+    button.querySelector('.loading-spinner').classList.remove('hidden');
+    
+    const jobs = await fetchJobs(currentPage);
+    if (jobs && Array.isArray(jobs)) {
+        if (jobs.length > 0) {
+            jobs.forEach(job => {
+                const jobElement = document.createElement('div');
+                jobElement.innerHTML = renderJobCard(job);
+                document.getElementById('jobsContainer').appendChild(jobElement);
+            });
+            currentPage++;
+        }
+        
+        // Only hide button if no jobs were returned
+        if (jobs.length === 0) {
+            button.innerHTML = `
+                <span class="text-sm">No more jobs</span>
+            `;
+            button.disabled = true;
+            button.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            button.disabled = false;
+            button.querySelector('.loading-text').classList.remove('hidden');
+            button.querySelector('.loading-spinner').classList.add('hidden');
+        }
+    } else {
+        button.innerHTML = `
+            <span class="text-sm">Error loading jobs</span>
+        `;
+        button.disabled = true;
+        button.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+});
+
+// User Search
+let searchTimeout;
+const searchInput = document.getElementById('userSearch');
+const searchResults = document.getElementById('searchResults');
+
+// Handle click outside
+document.addEventListener('click', (e) => {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+    }
+});
+
+// Handle search input
+searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(async () => {
+        const query = e.target.value;
+        if (query.length < 2) {
+            searchResults.classList.add('hidden');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/search/?q=${query}`);
+            const users = await response.json();
+            
+            if (users.length > 0) {
+                const resultsHTML = users.map(user => `
+                    <a href="/profile/${user.id}" 
+                       class="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors duration-150">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center font-semibold">
+                            ${user.name[0]}
+                        </span>
+                        <div>
+                            <p class="font-semibold">${user.name}</p>
+                            <p class="text-sm text-gray-600">${user.role}</p>
+                        </div>
+                    </a>
+                `).join('<div class="border-b border-gray-100"></div>');
+                
+                searchResults.innerHTML = resultsHTML;
+                searchResults.classList.remove('hidden');
+            } else {
+                searchResults.innerHTML = `
+                    <div class="p-3 text-center text-gray-500">
+                        No users found
+                    </div>
+                `;
+                searchResults.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+            searchResults.innerHTML = `
+                <div class="p-3 text-center text-red-500">
+                    Error searching users
+                </div>
+            `;
+            searchResults.classList.remove('hidden');
+        }
+    }, 300);
+});
+
+// Show results when focusing on search input
+searchInput.addEventListener('focus', () => {
+    if (searchInput.value.length >= 2) {
+        searchResults.classList.remove('hidden');
+    }
+});
+
+// Fetch News
+async function fetchNews() {
+    try {
+        const response = await fetch('/news/');
+        const news = await response.json();
+        
+        const newsHTML = news.map(item => `
+            <div class="border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                <h3 class="font-semibold">${item.title}</h3>
+                <p class="text-sm text-gray-600 mt-1">${item.content}</p>
+                <p class="text-xs text-gray-500 mt-2">${new Date(item.date).toLocaleDateString()}</p>
+            </div>
+        `).join('');
+        
+        document.getElementById('newsContainer').innerHTML = newsHTML;
+    } catch (error) {
+        console.error('News fetch error:', error);
+    }
+}
+
+// Initial load function
+async function initialLoad() {
+    const jobsContainer = document.getElementById('jobsContainer');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    
+    jobsContainer.innerHTML = `
+        <div class="text-center text-white py-4">
+            <i class="fas fa-spinner fa-spin text-2xl"></i>
+            <p class="mt-2">Loading jobs...</p>
+        </div>
+    `;
+    
+    const jobs = await fetchJobs(1);
+    if (jobs && Array.isArray(jobs)) {
+        jobsContainer.innerHTML = ''; // Clear loading state
+        
+        if (jobs.length > 0) {
+            jobs.forEach(job => {
+                const jobElement = document.createElement('div');
+                jobElement.innerHTML = renderJobCard(job);
+                jobsContainer.appendChild(jobElement);
+            });
+            currentPage++;
+            
+            // Reset button state
+            loadMoreBtn.disabled = false;
+            loadMoreBtn.innerHTML = `
+                <span class="loading-text">Load More</span>
+                <span class="loading-spinner hidden">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </span>
+            `;
+            loadMoreBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            jobsContainer.innerHTML = `
+                <div class="text-center text-white py-4">
+                    <p>No jobs found.</p>
+                </div>
+            `;
+            loadMoreBtn.innerHTML = `<span class="text-sm">No jobs available</span>`;
+            loadMoreBtn.disabled = true;
+            loadMoreBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    } else {
+        jobsContainer.innerHTML = `
+            <div class="text-center text-white py-4">
+                <p>Error loading jobs.</p>
+            </div>
+        `;
+        loadMoreBtn.innerHTML = `<span class="text-sm">Error loading jobs</span>`;
+        loadMoreBtn.disabled = true;
+        loadMoreBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+}
+
+// Update the DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', () => {
+    initialLoad();
+    fetchNews();
+});
+</script>
+</html>

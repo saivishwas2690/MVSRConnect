@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Analytics - MVSR Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/e8fec16106.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .nav-link {
+                @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
+                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2;
+            }
+            
+            .card {
+                @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
+                border border-gray-100;
+            }
+            
+            .section-title {
+                @apply text-xl font-bold text-gray-800 mb-4 flex items-center gap-2;
+            }
+
+            .btn-primary {
+                @apply bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg
+                transition-all duration-200 flex items-center justify-center gap-2 
+                font-semibold shadow-lg hover:shadow-xl;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
+            
+            <div class="flex items-center gap-3">
+                <a href="/projects/createcourse/" class="nav-link">
+                    <i class="fas fa-plus-circle"></i>
+                    Create Course
+                </a>
+                <a href="/jobsapi/" class="nav-link">
+                    <i class="fas fa-briefcase"></i>
+                    Jobs
+                </a>
+                <a href="/projects/viewprojects/" class="nav-link">
+                    <i class="fas fa-project-diagram"></i>
+                    Projects
+                </a>
+                <div class="relative group">
+                    <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
+                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                            {{ userdisplay|first }}
+                        </span>
+                        <span>{{ userdisplay }}</span>
+                    </a>
+                </div>
+                <a href="/logout/" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="fixed inset-0 bg-blue-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-xl">
+            <div class="flex flex-col items-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+                <p class="text-gray-700 mt-4" id="loadingText">Loading course data...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-6 space-y-6">
+        <!-- Course Header - Made more prominent -->
+        <div class="card p-8 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
+                <div class="text-center lg:text-left">
+                    <h1 id="courseTitle" class="text-4xl font-bold text-gray-800 mb-3"></h1>
+                    <p id="courseCode" class="text-lg text-gray-600"></p>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+                    <span id="courseBatch" class="px-6 py-3 bg-yellow-100 text-yellow-800 rounded-full font-semibold text-lg"></span>
+                    <span id="courseDate" class="text-gray-500"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Course Requirements - Spans 1 column -->
+            <div class="card p-6 bg-gradient-to-br from-white to-blue-50">
+                <h2 class="section-title">
+                    <i class="fas fa-clipboard-list text-blue-500"></i>
+                    Course Requirements
+                </h2>
+                <div class="space-y-4" id="requirementsContainer">
+                    <!-- Requirements will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Domain Distribution - Spans 2 columns -->
+            <div class="card p-6 lg:col-span-2 bg-gradient-to-br from-white to-indigo-50">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-pie text-blue-500"></i>
+                    Overall Domain Distribution
+                </h2>
+                <div class="relative h-[300px]">
+                    <canvas id="domainChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Section-wise Domain Distribution - Spans full width -->
+            <div class="card p-6 lg:col-span-3 bg-gradient-to-br from-white to-purple-50">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-bar text-indigo-500"></i>
+                    Domain Distribution by Section
+                </h2>
+                <div class="relative h-[400px] w-full">
+                    <canvas id="sectionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Course Outcomes Section - Spans full width -->
+            <div class="card p-6 lg:col-span-3 bg-gradient-to-br from-white to-green-50">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="section-title mb-0">
+                        <i class="fas fa-graduation-cap text-green-600"></i>
+                        Course Outcomes
+                    </h2>
+                    <div class="flex items-center gap-3">
+                        <button onclick="downloadMarks()" class="btn-primary bg-green-600 hover:bg-green-700">
+                            <i class="fas fa-file-excel"></i>
+                            Download Marks
+                        </button>
+                        <button id="predictButton" class="btn-primary hidden">
+                            <i class="fas fa-magic"></i>
+                            Predict Course Outcomes
+                        </button>
+                    </div>
+                </div>
+                <div id="courseOutcomesContainer" class="space-y-6">
+                    <!-- Course outcomes will be rendered here -->
+                </div>
+                <div class="mt-6 h-[300px]">
+                    <canvas id="coChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let domainChart = null;
+        let coChart = null;
+        let sectionChart = null;
+
+        function showLoading(message) {
+            document.getElementById('loadingText').textContent = message;
+            document.getElementById('loadingState').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingState').classList.add('hidden');
+        }
+
+        async function fetchCourseData() {
+            showLoading('Loading course data...');
+            try {
+                const courseId = window.location.pathname.split('/').filter(Boolean).pop();
+                const response = await fetch('/projects/coursedashboard/', {
+                    method: 'FETCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ course_id: courseId })
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch course data');
+                
+                const data = await response.json();
+                logProjectData(data);
+                renderCourseData(data);
+                await fetchCourseOutcomes(courseId);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderCourseData(data) {
+            // Basic Info
+            document.getElementById('courseTitle').textContent = data.title;
+            document.getElementById('courseCode').textContent = data.code;
+            document.getElementById('courseBatch').textContent = data.batch;
+            document.getElementById('courseDate').textContent = 
+                `Created on ${new Date(data.course_creation_date).toLocaleDateString()}`;
+
+            // Requirements
+            const reqContainer = document.getElementById('requirementsContainer');
+            reqContainer.innerHTML = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <h3 class="font-semibold text-blue-800">Guide Requirements</h3>
+                        <div class="mt-2 space-y-2">
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">Assistant Professor:</span> 
+                                ${data.limit_for_asst_prof} projects
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">Professor:</span> 
+                                ${data['limit_for prof']} projects
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-green-50 rounded-lg">
+                        <h3 class="font-semibold text-green-800">Additional Requirements</h3>
+                        <div class="mt-2 space-y-2">
+                            ${data.requires_guide ? 
+                                '<p class="text-sm text-gray-600"><i class="fas fa-check-circle text-green-500 mr-2"></i>Guide Required</p>' : 
+                                '<p class="text-sm text-gray-600"><i class="fas fa-times-circle text-red-500 mr-2"></i>Guide Not Required</p>'
+                            }
+                            ${data.requires_internship ? 
+                                '<p class="text-sm text-gray-600"><i class="fas fa-check-circle text-green-500 mr-2"></i>Internship Required</p>' : 
+                                '<p class="text-sm text-gray-600"><i class="fas fa-times-circle text-red-500 mr-2"></i>Internship Not Required</p>'
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Section Analytics
+            if (data.Projects && data.Projects.length > 0) {
+                const sectionData = {};
+                
+                // Initialize all sections first
+                data.Projects.forEach(project => {
+                    const section = project.Project_section;
+                    if (!sectionData[section]) {
+                        sectionData[section] = {
+                            totalProjects: 0,
+                            domains: {}
+                        };
+                    }
+                });
+
+                // Then count domain distributions
+                data.Projects.forEach(project => {
+                    const section = project.Project_section;
+                    sectionData[section].totalProjects++;
+                    
+                    if (project.project_domain) {
+                        const domain = project.project_domain;
+                        if (!sectionData[section].domains[domain]) {
+                            sectionData[section].domains[domain] = 0;
+                        }
+                        sectionData[section].domains[domain]++;
+                    }
+                });
+
+                console.log("Processed Section Data:", sectionData);
+                renderSectionChart(sectionData);
+            }
+
+            // Domain Chart
+            if (data.Projects && data.Projects.length > 0) {
+                const domains = {};
+                data.Projects.forEach(project => {
+                    if (project.project_domain) {
+                        domains[project.project_domain] = (domains[project.project_domain] || 0) + 1;
+                    }
+                });
+
+                renderDomainChart(domains);
+            }
+        }
+
+        function renderDomainChart(domains) {
+            const ctx = document.getElementById('domainChart').getContext('2d');
+            
+            if (domainChart) {
+                domainChart.destroy();
+            }
+
+            domainChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(domains),
+                    datasets: [{
+                        data: Object.values(domains),
+                        backgroundColor: [
+                            '#3B82F6', '#10B981', '#F59E0B', '#EF4444',
+                            '#8B5CF6', '#EC4899', '#6366F1'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Project Domains Distribution',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderSectionChart(sectionData) {
+            const ctx = document.getElementById('sectionChart').getContext('2d');
+            
+            if (sectionChart) {
+                sectionChart.destroy();
+            }
+
+            // Get all unique domains and sections
+            const allDomains = new Set();
+            Object.values(sectionData).forEach(section => {
+                Object.keys(section.domains).forEach(domain => {
+                    if (domain) allDomains.add(domain);
+                });
+            });
+
+            const sections = Object.keys(sectionData).sort();
+            const domains = Array.from(allDomains);
+
+            // Create datasets for grouped bars
+            const datasets = domains.map((domain, index) => {
+                const data = sections.map(section => {
+                    return sectionData[section].domains[domain] || 0;
+                });
+
+                return {
+                    label: domain,
+                    data: data,
+                    backgroundColor: [
+                        '#3B82F6', '#10B981', '#F59E0B', '#EF4444',
+                        '#8B5CF6', '#EC4899', '#6366F1'
+                    ][index % 7],
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    categoryPercentage: 0.8,
+                    barPercentage: 0.9
+                };
+            });
+
+            sectionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sections.map(s => `Section ${s}`),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1f2937',
+                            bodyColor: '#1f2937',
+                            titleFont: { weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            padding: 12,
+                            borderColor: 'rgba(0, 0, 0, 0.1)',
+                            borderWidth: 1,
+                            callbacks: {
+                                title: (tooltipItems) => {
+                                    return `Section ${tooltipItems[0].label}`;
+                                },
+                                label: (context) => {
+                                    return `${context.dataset.label}: ${context.parsed.y} projects`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Add a "No data" message if there's no data
+            if (!datasets.length) {
+                const container = document.getElementById('sectionChart').parentElement;
+                container.innerHTML = `
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <p class="text-gray-500">No domain data available</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Add this function to help with debugging
+        function logProjectData(data) {
+            console.log("All Projects:", data.Projects);
+            console.log("Sample Project:", data.Projects[0]);
+            console.log("Domains:", new Set(data.Projects.map(p => p.projectdomain).filter(Boolean)));
+            console.log("Sections:", new Set(data.Projects.map(p => p.Project_section)));
+        }
+
+        async function fetchCourseOutcomes(courseId) {
+            showLoading('Loading course outcomes...');
+            try {
+                const response = await fetch('/projects/courseoutcomes/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ id: courseId })
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch course outcomes');
+                
+                const data = await response.json();
+                renderCourseOutcomes(data);
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderCourseOutcomes(data) {
+            const container = document.getElementById('courseOutcomesContainer');
+            const predictButton = document.getElementById('predictButton');
+
+            if (!data.finalized) {
+                predictButton.classList.remove('hidden');
+                predictButton.onclick = () => predictOutcomes();
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-info-circle text-4xl mb-4"></i>
+                        <p>Course outcomes have not been finalized yet.</p>
+                        <p>Click the predict button to analyze projects and assign course outcomes.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            predictButton.classList.add('hidden');
+            
+            // Group projects by section first, then by CO
+            const projectsBySection = {};
+            data.Projects.forEach(project => {
+                const section = project.Project_section;
+                if (!projectsBySection[section]) {
+                    projectsBySection[section] = {};
+                }
+                if (!projectsBySection[section][project.projectCO]) {
+                    projectsBySection[section][project.projectCO] = [];
+                }
+                projectsBySection[section][project.projectCO].push(project);
+            });
+
+            container.innerHTML = Object.entries(projectsBySection).map(([section, coGroups]) => `
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Section ${section}</h3>
+                    <div class="space-y-3">
+                        ${Object.entries(coGroups).map(([co, projects]) => `
+                            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                <button class="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 
+                                             flex items-center justify-between transition-colors duration-200"
+                                        onclick="toggleCO(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-semibold text-gray-800">${co}</span>
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                            ${projects.length} projects
+                                        </span>
+                                    </div>
+                                    <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200"></i>
+                                </button>
+                                <div class="hidden p-4 bg-white">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        ${projects.map(project => `
+                                            <div class="bg-gray-50 p-4 rounded-lg hover:shadow-md transition-shadow">
+                                                <h5 class="font-medium text-gray-700 mb-2">${project.projectname}</h5>
+                                                <p class="text-sm text-gray-500 mb-2">${project.projectnickname}</p>
+                                                ${project.projectdomain ? 
+                                                    `<span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+                                                        ${project.projectdomain}
+                                                    </span>` : ''
+                                                }
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            // Render CO distribution chart
+            renderCOChart(data.Projects);
+        }
+
+        // Add this function for CO dropdown toggle
+        function toggleCO(button) {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('i');
+            
+            content.classList.toggle('hidden');
+            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
+        // Update the renderCOChart function
+        function renderCOChart(projects) {
+            const ctx = document.getElementById('coChart').getContext('2d');
+            
+            if (coChart) {
+                coChart.destroy();
+            }
+
+            // Count projects by CO
+            const coDistribution = {};
+            projects.forEach(project => {
+                if (!coDistribution[project.projectCO]) {
+                    coDistribution[project.projectCO] = 0;
+                }
+                coDistribution[project.projectCO]++;
+            });
+
+            coChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(coDistribution),
+                    datasets: [{
+                        label: 'Number of Projects',
+                        data: Object.values(coDistribution),
+                        backgroundColor: '#3B82F6',
+                        borderColor: '#2563EB',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Course Outcomes Distribution',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function predictOutcomes() {
+            showLoading('Analyzing projects and predicting course outcomes...');
+            try {
+                const courseId = window.location.pathname.split('/').filter(Boolean).pop();
+                const response = await fetch('/projects/predictoutcomes/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ course_id: courseId })
+                });
+
+                if (!response.ok) throw new Error('Failed to predict outcomes');
+                
+                const data = await response.json();
+                renderCourseOutcomes({ finalized: true, Projects: data.Projects });
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function downloadMarks() {
+            try {
+                const courseId = window.location.pathname.split('/').filter(Boolean).pop();
+                showLoading('Downloading marks...');
+                
+                const response = await fetch(`/projects/downloadmarks/${courseId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to download marks');
+
+                // Get the filename from the response headers if available
+                const filename = response.headers.get('Content-Disposition')?.split('filename=')[1] || 'course_marks.xlsx';
+                
+                // Create a blob from the response
+                const blob = await response.blob();
+                
+                // Create a temporary link to trigger the download
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Error downloading marks:', error);
+                // Show error message to user
+                alert('Failed to download marks. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Initialize
+        fetchCourseData();
+    </script>
+</body>
+</html>
