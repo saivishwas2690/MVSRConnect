@@ -426,19 +426,19 @@ def valid_profile_info(data):
     interests = data.get("interests", [])  # List of dicts [{'name': 'AI & ML'}, {'name': 'Open Source'}]
 
     # Extract only skill names from dictionaries
-    skill_names = [s.get("name") for s in skills]
-    interest_names = [i.get("name") for i in interests]
+    skill_names = {s.get("name") for s in skills}
+    interest_names = {i.get("name") for i in interests}
 
-    # Fetch existing skill and interest names from DB
-    existing_skills = set(Skill.objects.filter(name__in=skill_names).values_list("name", flat=True))
-    existing_interests = set(Interest.objects.filter(name__in=interest_names).values_list("name", flat=True))
+    # Use predefined skill and interest choices instead of DB queries
+    valid_skills = {s[0] for s in Skill.SKILL_CHOICES}  # Extract valid skill names
+    valid_interests = {i[0] for i in Interest.INTEREST_CHOICES}  # Extract valid interest names
 
-    # Check if all given skills and interests exist in DB
-    if not all(s in existing_skills for s in skill_names):
-        return False 
+    # Check if all given skills and interests exist in predefined lists
+    if not skill_names.issubset(valid_skills):
+        return False
 
-    if not all(i in existing_interests for i in interest_names):
-        return False 
+    if not interest_names.issubset(valid_interests):
+        return False
 
     return True
 @login_required
@@ -524,21 +524,6 @@ def interest_api(request, query=None):
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
     
-def interest_api(request, query=None):
-    if request.method == "GET":
-        try:
-            if query:
-                interests = Interest.objects.filter(name__icontains=query).values_list("name", flat=True).distinct()
-            else:
-                interests = Interest.objects.values_list("name", flat=True).distinct()
-
-            return JsonResponse({"data": list(interests)}, status=200)
-
-        except Exception as e:
-            logger.error(f"Error fetching interests: {str(e)}", exc_info=True)
-            return JsonResponse({"error": "Internal Server Error"}, status=500)
-
-    return JsonResponse({"error": "Invalid request method"}, status=405)
 
 
 
