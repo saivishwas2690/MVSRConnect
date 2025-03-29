@@ -68,7 +68,7 @@ def send_verification_email(request):
 
             # Generate a secure token
             token = secrets.token_hex(16)
-            HOST = settings.ALLOWED_HOSTS
+            HOST = settings.ALLOWED_HOSTS[0]
             verification_link = f"{HOST}/verify/{token}"
             print(verification_link)
 
