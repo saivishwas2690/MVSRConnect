@@ -189,7 +189,7 @@
                 const userId = urlParts[urlParts.length - 2];
 
                 const response = await fetch(`/profile/${userId}/`, {
-                    method: 'FETCH',
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'

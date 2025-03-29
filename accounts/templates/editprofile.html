@@ -225,7 +225,7 @@
             const loadingState = document.getElementById('loadingState');
             try {
                 const response = await fetch(`/profile/{{ request.user.id }}/`, {
-                    method: 'FETCH',
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'

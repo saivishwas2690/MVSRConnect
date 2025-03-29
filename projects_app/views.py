@@ -368,7 +368,7 @@ def project_detail(request, id):
             logger.error(f"Error fetching project details: {e}")
             return JsonResponse({"error": "An error occurred while fetching project details."}, status=500)
 
-    elif request.method == "FETCH":
+    elif request.method == "POST":
         try:
             project = get_object_or_404(Project, id=id)
             course = Course.objects.get(id=project.course.id)
@@ -599,7 +599,7 @@ def upload_document(request):
 @login_required
 def evaluate(request, id):
     try:
-        if request.method == "FETCH":
+        if request.method == "POST":
             try:
                 if request.user.role != "Incharge":
                     return JsonResponse({"error": "You can not view this page"}, status=403)
@@ -777,7 +777,7 @@ def get_courses(request):
                 logger.error(f"Error in get_courses (GET request): {e}")
                 return JsonResponse({"error": "An unexpected error occurred"}, status=500)
 
-        elif request.method == "FETCH":
+        elif request.method == "POST":
             try:
                 courses_data = []
                 all_courses = Course.objects.all()
@@ -835,7 +835,7 @@ def view_course_dashboard(request, id):
 @login_required
 def course_dashboard(request):
     try:
-        if request.method == "FETCH":
+        if request.method == "POST":
             try:
                 data = json.loads(request.body)
                 course_id = data.get("course_id")

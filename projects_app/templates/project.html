@@ -225,7 +225,7 @@
         try {
             const projectId = window.location.pathname.split('/').filter(Boolean).pop();
             const response = await fetch(`/projects/${projectId}/`, {
-                method: 'FETCH',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}'
