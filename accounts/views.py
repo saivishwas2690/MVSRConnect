@@ -208,6 +208,8 @@ def profile(request, id):
         return render(request, "profile.html", {"userdisplay": userdisplay, "display_edit_button": display_edit_button})
 
     try:
+        print(request)
+        print(request.method)
         if user.role == "Student":
             data = {
                 "name": f"{user.first_name} {user.last_name}",
