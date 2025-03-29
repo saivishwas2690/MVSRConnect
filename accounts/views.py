@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from projects_app.models import *
 from django.db.models import Q
 import logging
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +68,8 @@ def send_verification_email(request):
 
             # Generate a secure token
             token = secrets.token_hex(16)
-            verification_link = f"http://127.0.0.1:8000/verify/{token}"
+            HOST = settings.ALLOWED_HOSTS
+            verification_link = f"{HOST}/verify/{token}"
             print(verification_link)
 
             # Send email

@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DB_NAME", "False").lower() == "true"
 
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS")
 
 
 # Application definition
