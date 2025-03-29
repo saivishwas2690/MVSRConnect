@@ -295,6 +295,10 @@ def get_job_posts(request, page_number):
         
 @login_required
 def create_job_post(request):
+    if request.method == "GET":
+        display_edit_button = request.user.id == id
+        userdisplay = user_display(request)
+        return render(request, "createjobpost.html", {"userdisplay": userdisplay, "display_edit_button": display_edit_button})
     if request.method == "POST":
         try:
             data = json.loads(request.body)
@@ -491,27 +495,34 @@ def edit_profile(request):
 def skills_api(request, query=None):
     if request.method == "GET":
         try:
+            all_skills = [skill[0] for skill in Skill.SKILL_CHOICES]  # Extract skill names
             if query:
-                skills = Skill.objects.filter(name__icontains=query).values_list("name", flat=True).distinct()
+                filtered_skills = [skill for skill in all_skills if query.lower() in skill.lower()]
             else:
-                skills = Skill.objects.values_list("name", flat=True).distinct()
+                filtered_skills = all_skills  # Return all skills if no query is provided
 
-            return JsonResponse({"data": list(skills)}, status=200)
+            return JsonResponse({"data": filtered_skills}, status=200)
 
         except Exception as e:
-            logger.error(f"Error fetching skills: {str(e)}", exc_info=True)
             return JsonResponse({"error": "Internal Server Error"}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 def interest_api(request, query=None):
     if request.method == "GET":
-        if not query:  # If query is empty, return all interests
-            interests = Interest.objects.values_list('name', flat=True).distinct()
-        else:  # Otherwise, filter interests based on the query
-            interests = Interest.objects.filter(name__icontains=query).values_list('name', flat=True).distinct()
+        try:
+            all_interests = [interest[0] for interest in Interest.INTEREST_CHOICES]  # Extract interest names
+            if query:
+                filtered_interests = [interest for interest in all_interests if query.lower() in interest.lower()]
+            else:
+                filtered_interests = all_interests  # Return all interests if no query is provided
 
-        return JsonResponse({"data": list(interests)}, status=200)
+            return JsonResponse({"data": filtered_interests}, status=200)
+
+        except Exception as e:
+            return JsonResponse({"error": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
     
 def interest_api(request, query=None):
     if request.method == "GET":

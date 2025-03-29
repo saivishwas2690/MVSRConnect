@@ -34,9 +34,12 @@
             <div class="flex items-center gap-3">
                 {% if request.user.role == "Student" %}
                     <a href="projects/createproject/" class="nav-link">Create Project</a>
+                {% elif request.user.role == 'Teacher' %} 
+                    <a href="/createjobpost/" class="nav-link">Create Job Post</a>
                 {% elif request.user.role == 'Incharge' %}
                     <a href="projects/createcourse/" class="nav-link">Create Course</a>
                     <a href="projects/courses/" class="nav-link">View Courses</a>
+                    <a href="/createjobpost/" class="nav-link">Create Job Post</a>
                 {% endif %}
                 <a href="/jobsapi/" class="nav-link">Jobs</a>
                 <a href="/projects/viewprojects/" class="nav-link">Projects</a>
