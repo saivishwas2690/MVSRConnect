@@ -411,7 +411,7 @@ def create_job_post(request):
             link = data.get("link")
 
 
-            if not company or not jobrole or not content or link:
+            if not company or not jobrole or not content or not link:
                 return JsonResponse({"error": "Missing required fields"}, status=400)
 
             job_post = JobPost(
