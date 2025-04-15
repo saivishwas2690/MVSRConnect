@@ -541,6 +541,17 @@ def upload_document(request):
                 return JsonResponse({"error": "Invalid document type"}, status=400)
             # Convert base64 to file object
             try:
+                project = Project.objects.get(id=project_id)
+                if document_type == "abstract":
+                    if project.abstract is not None:
+                        return JsonResponse({"error": "You have already uploaded abstract"}, status=400)
+                if document_type == "guide_approval_form":
+                    if project.guide_approval_form is not None:
+                        return JsonResponse({"error": "You have already uploaded guide approval form"}, status=400)
+                if document_type == "report":
+                    if project.report is not None:
+                        return JsonResponse({"error": "You have already uploaded report"}, status=400)
+                    
                 # Create a temporary file name
                 file_name = f"{project_id}_{document_type}_{request.user.id}" + ".pdf"
                 # Upload to Cloudinary
@@ -558,7 +569,6 @@ def upload_document(request):
                     raise Exception("Failed to get URL from Cloudinary")
 
                 # Update project with the new file URL
-                project = Project.objects.get(id=project_id)
                 if document_type == "guide_approval_form" and project.course.requires_guide == False:
                     return JsonResponse({"error": "The course does not require a Guide"}, status=400)
                 
@@ -867,7 +877,8 @@ def course_dashboard(request):
                         "project_id": p.id,
                         "project_domain": p.domain if current_course.domain_requirement else None,
                         "Projects_title": p.title,
-                        "Project_section": section
+                        "Project_section": section,
+                        "Project_nickname": p.nick_name
                     })
 
                 return JsonResponse(course_data, status=200)
@@ -932,7 +943,7 @@ def course_outcomes(request):
                         COname = CO.title 
                     except ObjectDoesNotExist:
                         logger.warning(f"No Course Outcome found for Project ID {p.id}")
-                        COname = None  # Handle missing outcome gracefully
+                        COname = None  
 
                     data["Projects"].append({
                         "projectname": p.title,
@@ -1064,17 +1075,17 @@ Now, generate the correct mappings.
                         "Project_section": p.nick_name[0] if p.nick_name else "N/A"
                     })
 
-                    try:
-                        ProjectCOs.objects.create(
-                            project=p,
-                            outcome=CourseOutcome.objects.get(id=COID)
-                        )
-                    except ObjectDoesNotExist:
-                        logger.error(f"CourseOutcome with ID {COID} not found")
-                        continue
+                    # try:
+                    #     ProjectCOs.objects.create(
+                    #         project=p,
+                    #         outcome=CourseOutcome.objects.get(id=COID)
+                    #     )
+                    # except ObjectDoesNotExist:
+                    #     logger.error(f"CourseOutcome with ID {COID} not found")
+                    #     continue
 
-                course.CO_finalized = True
-                course.save()
+                # course.CO_finalized = True
+                # course.save()
 
                 return JsonResponse(data, status=200)
 
@@ -1188,3 +1199,56 @@ def export_marks_excel(request, course_id):
 
     except Exception as e:
         return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
+    
+
+def finalize_outcomes(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=400)
+    
+    try:
+        if request.user.role != "Incharge":
+            return JsonResponse({"error": "You are not allowed to perform this operation"}, status=400)
+        
+        data = json.loads(request.body)
+        course_id = data.get("course_id")
+        print(course_id)
+        course = Course.objects.get(id=course_id)
+        print(course)
+        if course.CO_finalized:
+            return JsonResponse({"error": "Outcomes already finalized"}, status=400)
+
+        projects = data.get("projects")
+        
+
+        for project in projects:
+            project_id = project.get("project_id")
+            CO_name = project.get("co_name")
+
+            try:
+                print(project_id)
+                project_obj = Project.objects.get(id=project_id)
+            except Project.DoesNotExist:
+                return JsonResponse({"error": "Project not found"}, status=404)
+            
+            try:
+                CO_obj = CourseOutcome.objects.get(title=CO_name)
+            except CourseOutcome.DoesNotExist:
+                return JsonResponse({"error": "Course Outcome not found"}, status=404)
+            
+            try:
+                ProjectCOs.objects.create(
+                    project=project_obj,
+                    outcome=CO_obj
+                )
+            except Exception as e:
+                return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
+            
+        course.CO_finalized = True
+        course.save()
+            
+        return JsonResponse({"message": "Outcomes finalized successfully"}, status=200)
+    
+    except Exception as e:
+        return JsonResponse({"error": f"An unexpected error occurred: "}, status=500)
+            
+            

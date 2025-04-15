@@ -10,7 +10,7 @@
         @layer components {
             .nav-link {
                 @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
-                hover:bg-yellow-400 hover:text-blue-900;
+                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2 text-sm sm:text-base;
             }
             
             .card {
@@ -22,77 +22,186 @@
                 @apply bg-yellow-500 hover:bg-yellow-400 text-blue-900 font-semibold px-6 py-2 
                 rounded-lg transition-all duration-200 hover:shadow-lg;
             }
+
+            /* Mobile nav link style */
+            .mobile-nav-link {
+                @apply flex items-center gap-3 px-6 py-3 text-white font-semibold
+                       hover:bg-blue-700 transition-all duration-200 text-base w-full;
+            }
+
+            /* Responsive card grid */
+            .jobs-grid {
+                @apply grid gap-6;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+
+            /* Responsive search results */
+            .search-results {
+                @apply absolute left-0 right-0 bg-white rounded-lg shadow-xl border border-gray-200 
+                       max-h-60 overflow-y-auto z-50 mt-2;
+            }
+
+            /* Responsive news container */
+            .news-container {
+                @apply w-full lg:w-80 space-y-6 mt-6 lg:mt-0;
+            }
         }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
     <!-- Navigation -->
     <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1>
-            
-            <div class="flex items-center gap-3">
-                {% if request.user.role == "Student" %}
-                    <a href="projects/createproject/" class="nav-link">Create Project</a>
-                {% elif request.user.role == 'Teacher' %} 
-                    <a href="/createjobpost/" class="nav-link">Create Job Post</a>
-                {% elif request.user.role == 'Incharge' %}
-                    <a href="projects/createcourse/" class="nav-link">Create Course</a>
-                    <a href="projects/courses/" class="nav-link">View Courses</a>
-                    <a href="/createjobpost/" class="nav-link">Create Job Post</a>
-                {% endif %}
-                <a href="/jobsapi/" class="nav-link">Jobs</a>
-                <a href="/projects/viewprojects/" class="nav-link">Projects</a>
-                <div class="relative group">
-                    <a href="profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
-                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
-                            {{ userdisplay|first }}
-                        </span>
-                        <span>{{ userdisplay }}</span>
+        <div class="max-w-7xl mx-auto">
+            <div class="relative">
+                <!-- Desktop and Mobile Layout -->
+                <div class="flex justify-between items-center">
+                    <!-- Logo -->
+                    <a href="/" class="flex-shrink-0">
+                        <h1 class="text-2xl sm:text-3xl text-yellow-500 font-bold">MVSR Connect</h1>
                     </a>
+                    
+                    <!-- Mobile menu button -->
+                    <button type="button" id="mobile-menu-button" class="lg:hidden text-white hover:text-yellow-400 focus:outline-none p-2">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+
+                    <!-- Desktop Navigation -->
+                    <div class="hidden lg:flex items-center gap-3">
+                        {% if request.user.role == "Student" %}
+                            <a href="projects/createproject/" class="nav-link">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Create Project</span>
+                            </a>
+                        {% elif request.user.role == 'Teacher' %} 
+                            <a href="/createjobpost/" class="nav-link">
+                                <i class="fas fa-briefcase"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% elif request.user.role == 'Incharge' %}
+                            <a href="projects/createcourse/" class="nav-link">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Create Course</span>
+                            </a>
+                            <a href="projects/courses/" class="nav-link">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>View Courses</span>
+                            </a>
+                            <a href="/createjobpost/" class="nav-link">
+                                <i class="fas fa-briefcase"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% endif %}
+                        <a href="/jobsapi/" class="nav-link">
+                            <i class="fas fa-briefcase"></i>
+                            <span>Jobs</span>
+                        </a>
+                        <a href="/projects/viewprojects/" class="nav-link">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>Projects</span>
+                        </a>
+                        <div class="relative group">
+                            <a href="profile/{{request.user.id}}" class="nav-link">
+                                <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                                    {{ userdisplay|first }}
+                                </span>
+                                <span class="hidden sm:inline">{{ userdisplay }}</span>
+                            </a>
+                        </div>
+                        <a href="/logout/" class="nav-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
                 </div>
-                <a href="/logout/" class="nav-link">Logout</a>
+
+                <!-- Mobile Navigation Menu -->
+                <div id="mobile-menu" class="lg:hidden hidden absolute top-full left-0 right-0 mt-2 bg-blue-800 rounded-lg shadow-lg overflow-hidden">
+                    <div class="flex flex-col py-2">
+                        {% if request.user.role == "Student" %}
+                            <a href="projects/createproject/" class="mobile-nav-link">
+                                <i class="fas fa-plus-circle w-6"></i>
+                                <span>Create Project</span>
+                            </a>
+                        {% elif request.user.role == 'Teacher' %} 
+                            <a href="/createjobpost/" class="mobile-nav-link">
+                                <i class="fas fa-briefcase w-6"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% elif request.user.role == 'Incharge' %}
+                            <a href="projects/createcourse/" class="mobile-nav-link">
+                                <i class="fas fa-plus-circle w-6"></i>
+                                <span>Create Course</span>
+                            </a>
+                            <a href="projects/courses/" class="mobile-nav-link">
+                                <i class="fas fa-graduation-cap w-6"></i>
+                                <span>View Courses</span>
+                            </a>
+                            <a href="/createjobpost/" class="mobile-nav-link">
+                                <i class="fas fa-briefcase w-6"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% endif %}
+                        <a href="/jobsapi/" class="mobile-nav-link">
+                            <i class="fas fa-briefcase w-6"></i>
+                            <span>Jobs</span>
+                        </a>
+                        <a href="/projects/viewprojects/" class="mobile-nav-link">
+                            <i class="fas fa-project-diagram w-6"></i>
+                            <span>Projects</span>
+                        </a>
+                        <a href="profile/{{request.user.id}}" class="mobile-nav-link">
+                            <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                                {{ userdisplay|first }}
+                            </span>
+                            <span>{{ userdisplay }}</span>
+                        </a>
+                        <a href="/logout/" class="mobile-nav-link">
+                            <i class="fas fa-sign-out-alt w-6"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 py-6 flex gap-6">
-        <!-- Jobs Feed -->
-        <div class="flex-1">
-            <div id="jobsContainer" class="space-y-6"></div>
-            <div class="text-center my-8">
-                <button id="loadMoreBtn" class="button-primary">
-                    <span class="loading-text">Load More</span>
-                    <span class="loading-spinner hidden">
-                        <i class="fas fa-spinner fa-spin"></i>
-                    </span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Right Sidebar -->
-        <div class="w-80 space-y-6">
-            <!-- Search Box -->
-            <div class="card p-4">
-                <div class="relative">
-                    <input type="text" 
-                           id="userSearch" 
-                           placeholder="Find User" 
-                           class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200" />
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    
-                    <!-- Updated search results container with absolute positioning and scroll -->
-                    <div id="searchResults" 
-                         class="absolute left-0 right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 max-h-60 overflow-y-auto hidden z-50">
-                    </div>
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Jobs Feed -->
+            <div class="flex-1">
+                <div id="jobsContainer" class="space-y-6"></div>
+                <div class="text-center my-8">
+                    <button id="loadMoreBtn" class="button-primary">
+                        <span class="loading-text">Load More</span>
+                        <span class="loading-spinner hidden">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Latest News -->
-            <div class="card p-4">
-                <h2 class="text-xl font-bold mb-4 text-blue-900">Latest News</h2>
-                <div id="newsContainer" class="space-y-4"></div>
+            <!-- Right Sidebar -->
+            <div class="news-container">
+                <!-- Search Box -->
+                <div class="card p-4">
+                    <div class="relative">
+                        <input type="text" 
+                               id="userSearch" 
+                               placeholder="Find User" 
+                               class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200" />
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        
+                        <!-- Search results container -->
+                        <div id="searchResults" class="search-results hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Latest News -->
+                <div class="card p-4">
+                    <h2 class="text-xl font-bold mb-4 text-blue-900">Latest News</h2>
+                    <div id="newsContainer" class="space-y-4"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -349,6 +458,49 @@ async function initialLoad() {
 document.addEventListener('DOMContentLoaded', () => {
     initialLoad();
     fetchNews();
+});
+
+// Add this new mobile menu functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    let isMenuOpen = false;
+
+    if (mobileMenuButton && mobileMenu) {
+        mobileMenuButton.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent event from bubbling up
+            isMenuOpen = !isMenuOpen;
+            mobileMenu.classList.toggle('hidden');
+            
+            // Update icon based on menu state
+            mobileMenuButton.innerHTML = isMenuOpen 
+                ? '<i class="fas fa-times text-xl"></i>' 
+                : '<i class="fas fa-bars text-xl"></i>';
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (isMenuOpen && !mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                mobileMenu.classList.add('hidden');
+                isMenuOpen = false;
+                mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+            }
+        });
+
+        // Prevent menu from closing when clicking inside it
+        mobileMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Close mobile menu on window resize if switching to desktop view
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 1024 && !mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+                isMenuOpen = false;
+                mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+            }
+        });
+    }
 });
 </script>
 </html>

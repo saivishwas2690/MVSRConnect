@@ -10,7 +10,12 @@
         @layer components {
             .nav-link {
                 @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
-                hover:bg-yellow-400 hover:text-blue-900;
+                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2 text-sm sm:text-base;
+            }
+
+            .mobile-nav-link {
+                @apply flex items-center gap-3 px-6 py-3 text-white font-semibold
+                       hover:bg-blue-700 transition-all duration-200 text-base w-full;
             }
             
             .card {
@@ -19,15 +24,28 @@
             }
             
             .section-title {
-                @apply text-xl font-bold text-gray-800 mb-4 flex items-center gap-2;
+                @apply text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2;
             }
 
             .project-card {
-                @apply border rounded-lg p-4 hover:bg-gray-50 transition-all duration-200;
+                @apply border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-all duration-200;
             }
 
             .tag {
-                @apply px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm;
+                @apply px-2 sm:px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs sm:text-sm;
+            }
+
+            .action-button {
+                @apply px-3 sm:px-4 py-2 rounded-lg transition-all duration-200 text-xs sm:text-sm 
+                flex items-center gap-2 shadow-sm font-medium;
+            }
+
+            .text-responsive {
+                @apply text-sm sm:text-base;
+            }
+
+            .heading-responsive {
+                @apply text-xl sm:text-2xl md:text-3xl;
             }
         }
     </style>
@@ -35,70 +53,130 @@
 <body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
     <!-- Navigation -->
     <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
-            
-            <div class="flex items-center gap-3">
-                {% if request.user.role == "Student" %}
-                    <a href="/projects/createproject/" class="nav-link">Create Project</a>
-                {% elif request.user.role == 'Incharge' %}
-                    <a href="/projects/createcourse/" class="nav-link">Create Course</a>
-                {% endif %}
-                <a href="/jobsapi/" class="nav-link">Jobs</a>
-                <a href="/projects/viewprojects/" class="nav-link">Projects</a>
-                <div class="relative group">
-                    <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
-                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
-                            {{ userdisplay|first }}
-                        </span>
-                        <span>{{ userdisplay }}</span>
+        <div class="max-w-7xl mx-auto">
+            <div class="relative">
+                <!-- Desktop and Mobile Layout -->
+                <div class="flex justify-between items-center">
+                    <!-- Logo -->
+                    <a href="/" class="flex-shrink-0">
+                        <h1 class="text-2xl sm:text-3xl text-yellow-500 font-bold">MVSR Connect</h1>
                     </a>
+                    
+                    <!-- Mobile menu button -->
+                    <button type="button" id="mobile-menu-button" class="lg:hidden text-white hover:text-yellow-400 focus:outline-none p-2">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+
+                    <!-- Desktop Navigation -->
+                    <div class="hidden lg:flex items-center gap-3">
+                        {% if request.user.role == "Student" %}
+                            <a href="/projects/createproject/" class="nav-link">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Create Project</span>
+                            </a>
+                        {% elif request.user.role == 'Incharge' %}
+                            <a href="/projects/createcourse/" class="nav-link">
+                                <i class="fas fa-book"></i>
+                                <span>Create Course</span>
+                            </a>
+                        {% endif %}
+                        <a href="/jobsapi/" class="nav-link">
+                            <i class="fas fa-briefcase"></i>
+                            <span>Jobs</span>
+                        </a>
+                        <a href="/projects/viewprojects/" class="nav-link">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>Projects</span>
+                        </a>
+                        <div class="relative group">
+                            <a href="/profile/{{request.user.id}}" class="nav-link">
+                                <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                                    {{ userdisplay|first }}
+                                </span>
+                                <span>{{ userdisplay }}</span>
+                            </a>
+                        </div>
+                        <a href="/logout/" class="nav-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
                 </div>
-                <a href="/logout/" class="nav-link">Logout</a>
+
+                <!-- Mobile Navigation Menu -->
+                <div id="mobile-menu" class="lg:hidden hidden absolute top-full left-0 right-0 mt-2 bg-blue-800 rounded-lg shadow-lg overflow-hidden">
+                    <div class="flex flex-col py-2">
+                        {% if request.user.role == "Student" %}
+                            <a href="/projects/createproject/" class="mobile-nav-link">
+                                <i class="fas fa-plus-circle w-6"></i>
+                                <span>Create Project</span>
+                            </a>
+                        {% elif request.user.role == 'Incharge' %}
+                            <a href="/projects/createcourse/" class="mobile-nav-link">
+                                <i class="fas fa-book w-6"></i>
+                                <span>Create Course</span>
+                            </a>
+                        {% endif %}
+                        <a href="/jobsapi/" class="mobile-nav-link">
+                            <i class="fas fa-briefcase w-6"></i>
+                            <span>Jobs</span>
+                        </a>
+                        <a href="/projects/viewprojects/" class="mobile-nav-link">
+                            <i class="fas fa-project-diagram w-6"></i>
+                            <span>Projects</span>
+                        </a>
+                        <a href="/profile/{{request.user.id}}" class="mobile-nav-link">
+                            <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                                {{ userdisplay|first }}
+                            </span>
+                            <span>{{ userdisplay }}</span>
+                        </a>
+                        <a href="/logout/" class="mobile-nav-link">
+                            <i class="fas fa-sign-out-alt w-6"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Loading State -->
     <div id="loadingState" class="fixed inset-0 bg-blue-900/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-xl shadow-xl">
+        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-xl">
             <div class="flex flex-col items-center">
-                <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
-                <p class="text-gray-700">Loading profile...</p>
+                <i class="fas fa-spinner fa-spin text-3xl sm:text-4xl text-blue-600 mb-4"></i>
+                <p class="text-gray-700 text-sm sm:text-base">Loading profile...</p>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto p-6">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="max-w-7xl mx-auto p-4 sm:p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <!-- Left Column -->
-            <div class="space-y-6">
+            <div class="space-y-4 sm:space-y-6">
                 <!-- Profile Overview -->
-                <div class="card p-6">
-                    <!-- Profile Header with Edit Button -->
-                    
-
+                <div class="card p-4 sm:p-6">
                     <!-- Profile Content -->
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full 
-                                  flex items-center justify-center text-4xl text-white font-bold shadow-lg">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6">
+                        <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full 
+                                  flex items-center justify-center text-3xl sm:text-4xl text-white font-bold shadow-lg">
                             <span id="profileInitial"></span>
                         </div>
-                        <div class="flex-1">
-                            <h2 class="text-2xl font-bold text-gray-800" id="fullName"></h2>
+                        <div class="flex-1 text-center sm:text-left">
+                            <h2 class="text-xl sm:text-2xl font-bold text-gray-800" id="fullName"></h2>
                             <p class="text-gray-600" id="rollNo"></p>
-                            <div class="flex items-center gap-2">
-                                <p class="text-sm text-gray-500" id="email"></p>
+                            <div class="flex flex-col sm:flex-row items-center gap-2">
+                                <p class="text-xs sm:text-sm text-gray-500" id="email"></p>
                                 {% if request.user.id|stringformat:"s" in request.path %}
                                 <a href="/editprofile/" 
                                    class="p-1.5 bg-yellow-500 hover:bg-yellow-600 text-blue-900 
                                           rounded-lg transition-all duration-200 flex items-center justify-center
                                           shadow-md hover:shadow-lg group relative">
                                     <i class="fas fa-edit"></i>
-                                    <!-- Tooltip -->
                                     <span class="absolute -top-12 left-1/2 -translate-x-1/2 
-                                                 bg-gray-900 text-white px-3 py-1.5 rounded-lg text-sm
+                                                 bg-gray-900 text-white px-3 py-1.5 rounded-lg text-xs sm:text-sm
                                                  opacity-0 group-hover:opacity-100 transition-opacity duration-200
                                                  whitespace-nowrap pointer-events-none">
                                         Edit your profile details
@@ -147,31 +225,46 @@
             </div>
 
             <!-- Right Column -->
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2 space-y-4 sm:space-y-6">
                 <!-- Academic Projects -->
-                <div class="card p-6">
-                    <div class="flex justify-between items-center mb-4">
+                <div class="card p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                         <h3 class="section-title mb-0">
                             <i class="fas fa-graduation-cap text-blue-500"></i>
                             Academic Projects
                         </h3>
-                        <!-- <a href="/projects/viewprojects/" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm flex items-center gap-2">
-                            <i class="fas fa-external-link-alt"></i>
-                            View All Projects
-                        </a> -->
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                            {% if request.user.role == "Faculty" %}
+                            <button onclick="evaluateProject()" 
+                                    class="action-button bg-green-600 hover:bg-green-700 text-white">
+                                <i class="fas fa-clipboard-check"></i>
+                                Evaluate
+                            </button>
+                            <button onclick="beGuide()" 
+                                    class="action-button bg-blue-600 hover:bg-blue-700 text-white">
+                                <i class="fas fa-user-tie"></i>
+                                Be a Guide
+                            </button>
+                            {% endif %}
+                            <a href="/projects/viewprojects/" 
+                               class="action-button bg-purple-600 hover:bg-purple-700 text-white">
+                                <i class="fas fa-external-link-alt"></i>
+                                View All
+                            </a>
+                        </div>
                     </div>
-                    <div id="academicProjectsContainer" class="space-y-4">
+                    <div id="academicProjectsContainer" class="space-y-3 sm:space-y-4">
                         <!-- Academic projects will be loaded here -->
                     </div>
                 </div>
 
                 <!-- Personal Projects -->
-                <div class="card p-6">
+                <div class="card p-4 sm:p-6">
                     <h3 class="section-title">
                         <i class="fas fa-laptop-code text-blue-500"></i>
                         Personal Projects
                     </h3>
-                    <div id="personalProjectsContainer" class="space-y-4">
+                    <div id="personalProjectsContainer" class="space-y-3 sm:space-y-4">
                         <!-- Personal projects will be loaded here -->
                     </div>
                 </div>
@@ -180,6 +273,48 @@
     </div>
 
     <script>
+        // Add mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            let isMenuOpen = false;
+
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    isMenuOpen = !isMenuOpen;
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    mobileMenuButton.innerHTML = isMenuOpen 
+                        ? '<i class="fas fa-times text-xl"></i>' 
+                        : '<i class="fas fa-bars text-xl"></i>';
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (isMenuOpen && !mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                        mobileMenu.classList.add('hidden');
+                        isMenuOpen = false;
+                        mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                    }
+                });
+
+                mobileMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth >= 1024 && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        isMenuOpen = false;
+                        mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                    }
+                });
+            }
+
+            // Initialize profile
+            fetchStudentProfile();
+        });
+
         async function fetchStudentProfile() {
             const loadingState = document.getElementById('loadingState');
             loadingState.classList.remove('hidden');
@@ -356,8 +491,15 @@
             `).join('');
         }
 
-        // Initialize
-        fetchStudentProfile();
+        function evaluateProject() {
+            // Add your evaluation logic here
+            console.log("Evaluate project clicked");
+        }
+
+        function beGuide() {
+            // Add your guide assignment logic here
+            console.log("Be a guide clicked");
+        }
     </script>
 </body>
 </html>

@@ -6,7 +6,7 @@ class CourseAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'name', 'code', 'Batch', 'requires_guide', 'requires_internship',
         'limit_per_prof', 'limit_per_asst_prof', 'domain_requirement', 'date',
-        'rubrics', 'domains'
+        'rubrics', 'domains', 'CO_finalized'
     )
     search_fields = ('name', 'code', 'Batch')
     list_filter = ('requires_guide', 'requires_internship', 'domain_requirement', 'Batch')

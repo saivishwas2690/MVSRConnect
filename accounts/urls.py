@@ -20,6 +20,8 @@ urlpatterns = [
     path('skills/', views.skills_api, name='skills_all'),
     path('interests/<str:query>/', views.interest_api, name='interest_api'),
     path('interests/', views.interest_api, name='interest_all'),
+    path('reset-password/<str:token>/', views.reset_password_with_token, name='reset_password_with_token'),
+    path('sendresetpasswordtoken/', views.send_reset_password_mail, name='send_reset_password_mail'),
     
 ]
 

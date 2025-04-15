@@ -1,24 +1,42 @@
-from django.http import JsonResponse
-from django.contrib.auth import authenticate, login, logout
+# Standard library imports
+import json
+import re
+import secrets
+import logging
+
+# Django core imports
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.middleware.csrf import get_token
-from django.contrib.auth.models import AbstractUser
-from django.db import models
-from django.contrib.auth import get_user_model
-import json, re
-from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import *
-import secrets
-from django.http import HttpResponse
+from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django.conf import settings
-from .utils import fetch_adzuna_jobs, validate_email, extract_rollno, extract_batch, extract_role
-from rest_framework.response import Response
-from projects_app.models import *
+from django.core.validators import validate_email
+from django.db import models
 from django.db.models import Q
-import logging
 from django.conf import settings
+
+# Django user model
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
+
+# REST Framework
+from rest_framework.response import Response
+
+# Local apps
+from .models import *
+from projects_app.models import *
+from .utils import (
+    fetch_adzuna_jobs,
+    validate_email,
+    extract_rollno,
+    extract_batch,
+    extract_role
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -56,23 +74,18 @@ def send_verification_email(request):
             data = json.loads(request.body)
             email = data.get("email")
 
-            # Validate email
             try:
                 validate_email(email)
             except ValidationError:
                 return JsonResponse({"error": "Email is not valid"}, status=400)
 
-            # Check if email already exists
             if NewUser.objects.filter(email=email).exists():
-                return JsonResponse({"error": "Email verification mail has been sent already"}, status=400)
+                return JsonResponse({"error": "Email verification mail has been sent already, Please check in spam also."}, status=400)
 
-            # Generate a secure token
             token = secrets.token_hex(16)
             HOST = settings.ALLOWED_HOSTS[0]
             verification_link = f"{HOST}/verify/{token}"
-            print(verification_link)
 
-            # Send email
             subject = "MVSRConnect Email Verification"
             try:
                 send_mail(subject, verification_link, settings.EMAIL_HOST_USER, [email])
@@ -80,7 +93,6 @@ def send_verification_email(request):
                 logger.error(f"Failed to send email: {str(e)}", exc_info=True)
                 return JsonResponse({"error": "Failed to send email"}, status=500)
 
-            # Create user with token
             user = NewUser.objects.create(email=email, token=token)
             user.save()
 
@@ -96,6 +108,87 @@ def send_verification_email(request):
             logger.error(f"Unexpected error: {str(e)}", exc_info=True)
             return JsonResponse({"error": "Internal Server Error"}, status=500)
         
+
+
+def send_reset_password_mail(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+            print(data)
+
+            try:
+                validate_email(email)
+            except ValidationError:
+                return JsonResponse({"error": "Invalid email"}, status=400)
+
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return JsonResponse({"error": "User with this email does not exist"}, status=404)
+
+        
+            token = secrets.token_urlsafe(48)
+            UserForgotPassword.objects.create(user=user, token=token)
+
+            HOST = settings.ALLOWED_HOSTS[0] if settings.ALLOWED_HOSTS else "http://localhost:8000"
+            reset_link = f"{HOST}/reset-password/{token}"
+
+            subject = "MVSRConnect - Reset Your Password"
+            message = f"Click the link below to reset your password:\n\n{reset_link}\n\nIf you did not request this, ignore this email."
+            try:
+                send_mail(subject, message, settings.EMAIL_HOST_USER, [email])
+            except Exception as e:
+                return JsonResponse({"error": "Failed to send email"}, status=500)
+
+            return JsonResponse({"success": "Reset password link sent to your email"}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        
+        except Exception as e:
+            return JsonResponse({"error": "Something went wrong. Try again later."}, status=500)
+
+    else:
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    
+def reset_password_with_token(request, token):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            token = data.get("token")
+            new_password = data.get("new_password")
+
+            if not token or not new_password:
+                return JsonResponse({"error": "Token and new password are required"}, status=400)
+
+            try:
+                reset_obj = UserForgotPassword.objects.get(token=token, is_used=False)
+            except UserForgotPassword.DoesNotExist:
+                return JsonResponse({"error": "Invalid or used token"}, status=404)
+
+            if reset_obj.is_expired():
+                return JsonResponse({"error": "Token expired"}, status=400)
+
+            user = reset_obj.user
+            user.password = make_password(new_password)
+            user.save()
+
+            reset_obj.is_used = True
+            reset_obj.save()
+
+            return JsonResponse({"success": "Password has been reset successfully"}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        except Exception as e:
+            return JsonResponse({"error": "Internal server error"}, status=500)
+    elif request.method == "GET":
+        return render (request, "changepassword.html")
+    else:
+        return JsonResponse({"error": "Method not allowed"}, status=400)
+
 def login_user(request):
     if request.method == "POST":
         try:
@@ -183,7 +276,14 @@ def signup(request, token):
             return JsonResponse({"error": "Internal Server Error"}, status=500)
 
     elif request.method == "GET":
-        return render(request, "signup.html")
+        email = NewUser.objects.get(token=token).email
+        designations = []
+        role = extract_role(email)
+        if role == "Student":
+            designations = ["Student"]
+        else:
+            designations = ["Assistant Professor", "Professor"]
+        return render(request, "signup.html", {"designations": designations})
 
 def get_csrf_token(request):
     return JsonResponse({"csrfToken": get_token(request)})

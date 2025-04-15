@@ -10,7 +10,12 @@
         @layer components {
             .nav-link {
                 @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
-                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2;
+                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2 text-sm sm:text-base;
+            }
+
+            .mobile-nav-link {
+                @apply flex items-center gap-3 px-6 py-3 text-white font-semibold
+                       hover:bg-blue-700 transition-all duration-200 text-base w-full;
             }
             
             .card {
@@ -19,12 +24,17 @@
             }
             
             .section-title {
-                @apply text-xl font-bold text-gray-800 mb-4 flex items-center gap-2;
+                @apply text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2;
             }
 
             .download-btn {
-                @apply flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg
-                hover:bg-blue-700 transition-all duration-200 font-semibold;
+                @apply flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg
+                hover:bg-blue-700 transition-all duration-200 font-semibold text-sm sm:text-base whitespace-nowrap;
+            }
+
+            .badge {
+                @apply px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold flex items-center gap-2 
+                       shadow-md text-sm sm:text-base whitespace-nowrap;
             }
         }
     </style>
@@ -32,139 +42,194 @@
 <body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
     <!-- Navigation -->
     <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
-            
-            <div class="flex items-center gap-3">
-                {% if request.user.role == "Student" %}
-                    <a href="/projects/createproject/" class="nav-link">
-                        <i class="fas fa-plus-circle"></i>
-                        Create Project
+        <div class="max-w-7xl mx-auto">
+            <div class="relative">
+                <!-- Desktop and Mobile Layout -->
+                <div class="flex justify-between items-center">
+                    <!-- Logo -->
+                    <a href="/" class="flex-shrink-0">
+                        <h1 class="text-2xl sm:text-3xl text-yellow-500 font-bold">MVSR Connect</h1>
                     </a>
-                {% elif request.user.role == 'Incharge' %}
-                    <a href="/projects/createcourse/" class="nav-link">
-                        <i class="fas fa-book"></i>
-                        Create Course
-                    </a>
-                {% endif %}
-                <a href="/jobsapi/" class="nav-link">
-                    <i class="fas fa-briefcase"></i>
-                    Jobs
-                </a>
-                <a href="/projects/viewprojects/" class="nav-link">
-                    <i class="fas fa-project-diagram"></i>
-                    Projects
-                </a>
-                <div class="relative group">
-                    <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
-                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
-                            {{ userdisplay|first }}
-                        </span>
-                        <span>{{ userdisplay }}</span>
-                    </a>
+                    
+                    <!-- Mobile menu button -->
+                    <button type="button" id="mobile-menu-button" class="lg:hidden text-white hover:text-yellow-400 focus:outline-none p-2">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+
+                    <!-- Desktop Navigation -->
+                    <div class="hidden lg:flex items-center gap-3">
+                        {% if request.user.role == "Student" %}
+                            <a href="/projects/createproject/" class="nav-link">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Create Project</span>
+                            </a>
+                        {% elif request.user.role == 'Teacher' %}
+                            <a href="/createjobpost/" class="nav-link">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% elif request.user.role == 'Incharge' %}
+                            <a href="/projects/createcourse/" class="nav-link">
+                                <i class="fas fa-book"></i>
+                                <span>Create Course</span>
+                            </a>
+                            <a href="/projects/courses/" class="nav-link">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>View Courses</span>
+                            </a>
+                            <a href="/createjobpost/" class="nav-link">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% endif %}
+                        <a href="/jobsapi/" class="nav-link">
+                            <i class="fas fa-briefcase"></i>
+                            <span>Jobs</span>
+                        </a>
+                        <a href="/projects/viewprojects/" class="nav-link">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>Projects</span>
+                        </a>
+                        <div class="relative group">
+                            <a href="/profile/{{request.user.id}}" class="nav-link">
+                                <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                                    {{ userdisplay|first }}
+                                </span>
+                                <span>{{ userdisplay }}</span>
+                            </a>
+                        </div>
+                        <a href="/logout/" class="nav-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
                 </div>
-                <a href="/logout/" class="nav-link">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </a>
+
+                <!-- Mobile Navigation Menu -->
+                <div id="mobile-menu" class="lg:hidden hidden absolute top-full left-0 right-0 mt-2 bg-blue-800 rounded-lg shadow-lg overflow-hidden">
+                    <div class="flex flex-col py-2">
+                        {% if request.user.role == "Student" %}
+                            <a href="/projects/createproject/" class="mobile-nav-link">
+                                <i class="fas fa-plus-circle w-6"></i>
+                                <span>Create Project</span>
+                            </a>
+                        {% elif request.user.role == 'Teacher' %}
+                            <a href="/createjobpost/" class="mobile-nav-link">
+                                <i class="fas fa-plus-circle w-6"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% elif request.user.role == 'Incharge' %}
+                            <a href="/projects/createcourse/" class="mobile-nav-link">
+                                <i class="fas fa-book w-6"></i>
+                                <span>Create Course</span>
+                            </a>
+                            <a href="/projects/courses/" class="mobile-nav-link">
+                                <i class="fas fa-graduation-cap w-6"></i>
+                                <span>View Courses</span>
+                            </a>
+                            <a href="/createjobpost/" class="mobile-nav-link">
+                                <i class="fas fa-plus-circle w-6"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% endif %}
+                        <a href="/jobsapi/" class="mobile-nav-link">
+                            <i class="fas fa-briefcase w-6"></i>
+                            <span>Jobs</span>
+                        </a>
+                        <a href="/projects/viewprojects/" class="mobile-nav-link">
+                            <i class="fas fa-project-diagram w-6"></i>
+                            <span>Projects</span>
+                        </a>
+                        <a href="/profile/{{request.user.id}}" class="mobile-nav-link">
+                            <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                                {{ userdisplay|first }}
+                            </span>
+                            <span>{{ userdisplay }}</span>
+                        </a>
+                        <a href="/logout/" class="mobile-nav-link">
+                            <i class="fas fa-sign-out-alt w-6"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto p-6">
+    <div class="max-w-7xl mx-auto p-4 sm:p-6">
         <!-- Project Header -->
-        <div class="card p-6 mb-6">
-            <div class="flex flex-col lg:flex-row justify-between gap-6">
-                <div class="space-y-4">
-                    <h1 id="projectTitle" class="text-3xl font-bold text-gray-800"></h1>
-                    <div class="flex flex-wrap gap-4">
-                        <div id="projectBatch" class="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-400 
-                                                    text-blue-900 rounded-lg font-semibold flex items-center gap-2 
-                                                    shadow-md">
-                            <i class="fas fa-tag"></i>
-                            <!-- Batch name will be rendered here -->
+        <div class="card p-4 sm:p-6 mb-4 sm:mb-6">
+            <div class="flex flex-col lg:flex-row justify-between gap-4 sm:gap-6">
+                <div class="space-y-3 sm:space-y-4">
+                    <h1 id="projectTitle" class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800"></h1>
+                    <div class="flex flex-wrap gap-2 sm:gap-4">
+                        <div id="projectBatch" class="badge bg-gradient-to-r from-yellow-500 to-yellow-400 text-blue-900">
                         </div>
-                        <div id="projectDomain" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-400 
-                                             text-white rounded-lg font-semibold flex items-center gap-2 
-                                             shadow-md">
-                            <i class="fas fa-globe"></i>
-                            <!-- Domain will be rendered here -->
+                        <div id="projectDomain" class="badge bg-gradient-to-r from-blue-500 to-blue-400 text-white">
                         </div>
                     </div>
                 </div>
-                <div id="evaluateButtonContainer">
-                    <!-- Evaluate button will be rendered here -->
-                </div>
-                <div id="beGuideButtonContainer">
-                    <!-- Be Guide button will be rendered here -->
+                <div class="flex flex-wrap gap-3">
+                    <div id="evaluateButtonContainer"></div>
+                    <div id="beGuideButtonContainer"></div>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <!-- Left Column -->
-            <div class="space-y-6">
+            <div class="space-y-4 sm:space-y-6">
                 <!-- Course Info -->
-                <div class="card p-6">
+                <div class="card p-4 sm:p-6">
                     <h2 class="section-title">
                         <i class="fas fa-book text-blue-500"></i>
                         Course Details
                     </h2>
-                    <div id="courseDetails" class="space-y-2">
-                        <!-- Course details will be rendered here -->
-                    </div>
+                    <div id="courseDetails" class="space-y-2"></div>
                 </div>
 
                 <!-- Team Members -->
-                <div class="card p-6">
+                <div class="card p-4 sm:p-6">
                     <h2 class="section-title">
                         <i class="fas fa-users text-blue-500"></i>
                         Team Members
                     </h2>
-                    <div id="teamMembers" class="divide-y divide-gray-100">
-                        <!-- Team members will be rendered here -->
-                    </div>
+                    <div id="teamMembers" class="divide-y divide-gray-100"></div>
                 </div>
 
                 <!-- Project Guide -->
-                <div id="guideSection" class="card p-6">
+                <div id="guideSection" class="card p-4 sm:p-6">
                     <h2 class="section-title">
                         <i class="fas fa-chalkboard-teacher text-blue-500"></i>
                         Project Guide
                     </h2>
-                    <div id="projectGuide">
-                        <!-- Guide details will be rendered here -->
-                    </div>
+                    <div id="projectGuide"></div>
                 </div>
             </div>
 
             <!-- Right Column -->
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2 space-y-4 sm:space-y-6">
                 <!-- Project Description -->
-                <div class="card p-6">
+                <div class="card p-4 sm:p-6">
                     <h2 class="section-title">
                         <i class="fas fa-info-circle text-blue-500"></i>
                         Project Description
                     </h2>
-                    <p id="projectDescription" class="text-gray-700 leading-relaxed"></p>
+                    <p id="projectDescription" class="text-gray-700 leading-relaxed text-sm sm:text-base"></p>
                 </div>
 
                 <!-- Documents -->
-                <div class="card p-6">
-                    <div class="flex justify-between items-center mb-6">
+                <div class="card p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 sm:mb-6">
                         <h2 class="section-title mb-0">
                             <i class="fas fa-file-alt text-blue-500"></i>
                             Project Documents
                         </h2>
-                        <div id="uploadButtonsContainer" class="flex gap-3">
-                            <!-- Upload buttons will be rendered here -->
-                        </div>
+                        <div id="uploadButtonsContainer" class="flex flex-wrap gap-2 sm:gap-3"></div>
                     </div>
                     
-                    <div id="documentsSection" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Documents will be rendered here -->
-                    </div>
+                    <div id="documentsSection" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </div>
             </div>
         </div>
@@ -616,8 +681,48 @@
         }
     }
 
-    // Initialize
-    fetchProjectDetails();
+    // Add mobile menu functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        let isMenuOpen = false;
+
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isMenuOpen = !isMenuOpen;
+                mobileMenu.classList.toggle('hidden');
+                
+                mobileMenuButton.innerHTML = isMenuOpen 
+                    ? '<i class="fas fa-times text-xl"></i>' 
+                    : '<i class="fas fa-bars text-xl"></i>';
+            });
+
+            document.addEventListener('click', function(e) {
+                if (isMenuOpen && !mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                    mobileMenu.classList.add('hidden');
+                    isMenuOpen = false;
+                    mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                }
+            });
+
+            mobileMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024 && !mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                    isMenuOpen = false;
+                    mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                }
+            });
+        }
+
+        // Initialize project details
+        fetchProjectDetails();
+    });
     </script>
 </body>
+</html>
 </html>

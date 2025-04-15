@@ -21,8 +21,8 @@ urlpatterns = [
     path("viewcoursedashboard/<int:id>/", views.view_course_dashboard, name="view_course_dashboard"),
     path("coursedashboard/", views.course_dashboard, name='course_dashboard'),
     path("predictoutcomes/", views.predict_outcomes, name="predict_outcomes"),
-    path("downloadmarks/<int:course_id>/", views.export_marks_excel, name="downloadmarks")
-
+    path("downloadmarks/<int:course_id>/", views.export_marks_excel, name="downloadmarks"),
+    path("finalizeoutcomes/", views.finalize_outcomes, name="finalize_outcomes"),
 ]
 
 

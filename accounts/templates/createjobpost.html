@@ -6,118 +6,16 @@
     <title>Create Job Post - MVSR Connect</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://kit.fontawesome.com/e8fec16106.js" crossorigin="anonymous"></script>
-</head>
-<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1>
-            
-            
-            <div class="flex items-center gap-3">
-                {% if request.user.role == "Student" %}
-                    <a href="projects/createproject/" class="nav-link">Create Project</a>
-                {% elif request.user.role == 'Teacher' %} 
-                    <a href="/createjobpost/" class="nav-link">Create Job Post</a>
-                {% elif request.user.role == 'Incharge'%}
-                    <a href="/projects/createcourse/" class="nav-link">Create Course</a>
-                    <a href="/projects/courses/" class="nav-link">View Courses</a>
-                    <a href="/createjobpost/" class="nav-link">Create Job Post</a>
-                {% endif %}
-                <a href="/jobsapi/" class="nav-link">Jobs</a>
-                <a href="/projects/viewprojects/" class="nav-link">Projects</a>
-                <div class="relative group">
-                    <a href="profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
-                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
-                            {{ userdisplay|first }}
-                        </span>
-                        <span>{{ userdisplay }}</span>
-                    </a>
-                </div>
-                <a href="/logout/" class="nav-link">Logout</a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-blue-900/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-        <div class="bg-white p-8 rounded-xl shadow-xl">
-            <div class="flex flex-col items-center">
-                <div class="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
-                <p class="text-gray-700 mt-4">Creating job post...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Response Message -->
-    <div id="responseMessage" class="fixed top-4 right-4 max-w-md z-50 hidden">
-        <div class="flex items-center p-4 rounded-lg shadow-lg">
-            <!-- Classes and icon will be set dynamically -->
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="max-w-4xl mx-auto p-6">
-        <div class="bg-white rounded-xl shadow-lg p-8">
-            <div class="mb-8">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">Create Job Post</h2>
-                <p class="text-gray-600">Share job opportunities with the MVSR community</p>
-            </div>
-
-            <form id="jobPostForm" class="space-y-6">
-                <div class="space-y-2">
-                    <label for="company" class="block text-sm font-medium text-gray-700">Company Name</label>
-                    <div class="relative">
-                        <i class="fas fa-building absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                        <input type="text" id="company" 
-                               class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                               placeholder="Enter company name" required>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label for="jobrole" class="block text-sm font-medium text-gray-700">Job Role</label>
-                    <div class="relative">
-                        <i class="fas fa-briefcase absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                        <input type="text" id="jobrole" 
-                               class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                               placeholder="Enter job role" required>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label for="content" class="block text-sm font-medium text-gray-700">Job Description</label>
-                    <div class="relative">
-                        <textarea id="content" rows="6"
-                                  class="w-full p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                                  placeholder="Enter detailed job description" required></textarea>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label for="link" class="block text-sm font-medium text-gray-700">Application Link (optional)</label>
-                    <div class="relative">
-                        <i class="fas fa-link absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                        <input type="url" id="link" 
-                               class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                               placeholder="https://...">
-                    </div>
-                </div>
-
-                <button type="submit" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
-                    <i class="fas fa-plus-circle"></i>
-                    Create Job Post
-                </button>
-            </form>
-        </div>
-    </div>
-
     <style type="text/tailwindcss">
         @layer components {
             .nav-link {
                 @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
-                hover:bg-yellow-400 hover:text-blue-900;
+                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2 text-sm sm:text-base;
+            }
+
+            .mobile-nav-link {
+                @apply flex items-center gap-3 px-6 py-3 text-white font-semibold
+                       hover:bg-blue-700 transition-all duration-200 text-base w-full;
             }
             
             .card {
@@ -125,12 +23,211 @@
                 border border-gray-100;
             }
             
-            .button-primary {
-                @apply bg-yellow-500 hover:bg-yellow-400 text-blue-900 font-semibold px-6 py-2 
-                rounded-lg transition-all duration-200 hover:shadow-lg;
+            .form-input {
+                @apply w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 
+                focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all
+                text-sm sm:text-base;
+            }
+
+            .form-label {
+                @apply block text-sm sm:text-base font-medium text-gray-700 mb-1;
+            }
+
+            .input-icon {
+                @apply absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm sm:text-base;
             }
         }
     </style>
+</head>
+<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="relative">
+                <!-- Desktop and Mobile Layout -->
+                <div class="flex justify-between items-center">
+                    <!-- Logo -->
+                    <a href="/" class="flex-shrink-0">
+                        <h1 class="text-2xl sm:text-3xl text-yellow-500 font-bold">MVSR Connect</h1>
+                    </a>
+                    
+                    <!-- Mobile menu button -->
+                    <button type="button" id="mobile-menu-button" class="lg:hidden text-white hover:text-yellow-400 focus:outline-none p-2">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+
+                    <!-- Desktop Navigation -->
+                    <div class="hidden lg:flex items-center gap-3">
+                        {% if request.user.role == "Student" %}
+                            <a href="/projects/createproject/" class="nav-link">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Create Project</span>
+                            </a>
+                        {% elif request.user.role == 'Teacher' %}
+                            <a href="/createjobpost/" class="nav-link">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% elif request.user.role == 'Incharge' %}
+                            <a href="/projects/createcourse/" class="nav-link">
+                                <i class="fas fa-book"></i>
+                                <span>Create Course</span>
+                            </a>
+                            <a href="/projects/courses/" class="nav-link">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>View Courses</span>
+                            </a>
+                            <a href="/createjobpost/" class="nav-link">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% endif %}
+                        <a href="/jobsapi/" class="nav-link">
+                            <i class="fas fa-briefcase"></i>
+                            <span>Jobs</span>
+                        </a>
+                        <a href="/projects/viewprojects/" class="nav-link">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>Projects</span>
+                        </a>
+                        <div class="relative group">
+                            <a href="/profile/{{request.user.id}}" class="nav-link">
+                                <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                                    {{ userdisplay|first }}
+                                </span>
+                                <span>{{ userdisplay }}</span>
+                            </a>
+                        </div>
+                        <a href="/logout/" class="nav-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Mobile Navigation Menu -->
+                <div id="mobile-menu" class="lg:hidden hidden absolute top-full left-0 right-0 mt-2 bg-blue-800 rounded-lg shadow-lg overflow-hidden">
+                    <div class="flex flex-col py-2">
+                        {% if request.user.role == "Student" %}
+                            <a href="/projects/createproject/" class="mobile-nav-link">
+                                <i class="fas fa-plus-circle w-6"></i>
+                                <span>Create Project</span>
+                            </a>
+                        {% elif request.user.role == 'Teacher' %}
+                            <a href="/createjobpost/" class="mobile-nav-link">
+                                <i class="fas fa-plus-circle w-6"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% elif request.user.role == 'Incharge' %}
+                            <a href="/projects/createcourse/" class="mobile-nav-link">
+                                <i class="fas fa-book w-6"></i>
+                                <span>Create Course</span>
+                            </a>
+                            <a href="/projects/courses/" class="mobile-nav-link">
+                                <i class="fas fa-graduation-cap w-6"></i>
+                                <span>View Courses</span>
+                            </a>
+                            <a href="/createjobpost/" class="mobile-nav-link">
+                                <i class="fas fa-plus-circle w-6"></i>
+                                <span>Create Job Post</span>
+                            </a>
+                        {% endif %}
+                        <a href="/jobsapi/" class="mobile-nav-link">
+                            <i class="fas fa-briefcase w-6"></i>
+                            <span>Jobs</span>
+                        </a>
+                        <a href="/projects/viewprojects/" class="mobile-nav-link">
+                            <i class="fas fa-project-diagram w-6"></i>
+                            <span>Projects</span>
+                        </a>
+                        <a href="/profile/{{request.user.id}}" class="mobile-nav-link">
+                            <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                                {{ userdisplay|first }}
+                            </span>
+                            <span>{{ userdisplay }}</span>
+                        </a>
+                        <a href="/logout/" class="mobile-nav-link">
+                            <i class="fas fa-sign-out-alt w-6"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-blue-900/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+            <div class="flex flex-col items-center">
+                <div class="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-4 border-blue-500 border-t-transparent"></div>
+                <p class="text-gray-700 mt-4 text-sm sm:text-base">Creating job post...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Response Message -->
+    <div id="responseMessage" class="fixed top-4 right-4 max-w-[90%] sm:max-w-md z-50 hidden">
+        <div class="flex items-center p-4 rounded-lg shadow-lg">
+            <!-- Classes and icon will be set dynamically -->
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto p-4 sm:p-6">
+        <div class="bg-white rounded-xl shadow-lg p-4 sm:p-8">
+            <div class="mb-6 sm:mb-8">
+                <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Create Job Post</h2>
+                <p class="text-gray-600 text-sm sm:text-base">Share job opportunities with the MVSR community</p>
+            </div>
+
+            <form id="jobPostForm" class="space-y-4 sm:space-y-6">
+                <div class="space-y-2">
+                    <label for="company" class="form-label">Company Name</label>
+                    <div class="relative">
+                        <i class="fas fa-building input-icon"></i>
+                        <input type="text" id="company" class="form-input"
+                               placeholder="Enter company name" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="jobrole" class="form-label">Job Role</label>
+                    <div class="relative">
+                        <i class="fas fa-briefcase input-icon"></i>
+                        <input type="text" id="jobrole" class="form-input"
+                               placeholder="Enter job role" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="content" class="form-label">Job Description</label>
+                    <div class="relative">
+                        <textarea id="content" rows="6"
+                                  class="w-full p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 
+                                         focus:border-blue-500 transition-all text-sm sm:text-base"
+                                  placeholder="Enter detailed job description" required></textarea>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="link" class="form-label">Application Link (optional)</label>
+                    <div class="relative">
+                        <i class="fas fa-link input-icon"></i>
+                        <input type="url" id="link" class="form-input"
+                               placeholder="https://...">
+                    </div>
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg 
+                               transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base">
+                    <i class="fas fa-plus-circle"></i>
+                    Create Job Post
+                </button>
+            </form>
+        </div>
+    </div>
 
     <script>
         function showLoading() {
@@ -196,6 +293,45 @@
                 console.error('Error:', error);
             } finally {
                 hideLoading();
+            }
+        });
+
+        // Add mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            let isMenuOpen = false;
+
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    isMenuOpen = !isMenuOpen;
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    mobileMenuButton.innerHTML = isMenuOpen 
+                        ? '<i class="fas fa-times text-xl"></i>' 
+                        : '<i class="fas fa-bars text-xl"></i>';
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (isMenuOpen && !mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                        mobileMenu.classList.add('hidden');
+                        isMenuOpen = false;
+                        mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                    }
+                });
+
+                mobileMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth >= 1024 && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        isMenuOpen = false;
+                        mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                    }
+                });
             }
         });
     </script>

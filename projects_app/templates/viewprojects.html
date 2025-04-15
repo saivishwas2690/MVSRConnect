@@ -10,38 +10,39 @@
     @layer components {
       .nav-link {
         @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
-        hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2;
+        hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2 text-sm sm:text-base;
+      }
+
+      .mobile-nav-link {
+        @apply flex items-center gap-3 px-6 py-3 text-white font-semibold
+               hover:bg-blue-700 transition-all duration-200 text-base w-full;
       }
       
       .form-input {
-        @apply w-full p-3 bg-white/80 border border-gray-200 rounded-lg 
+        @apply w-full p-2 sm:p-3 bg-white/80 border border-gray-200 rounded-lg 
         focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none 
-        transition-all duration-200;
+        transition-all duration-200 text-sm sm:text-base;
       }
 
       .course-tab {
-        @apply px-6 py-3 font-semibold transition-all duration-200 hover:text-yellow-400;
+        @apply px-4 sm:px-6 py-2 sm:py-3 font-semibold transition-all duration-200 rounded-lg
+        border-2 border-transparent flex items-center gap-2 min-w-[150px] sm:min-w-[200px]
+        justify-center whitespace-nowrap text-sm sm:text-base;
       }
 
       .section-tab {
-        @apply px-6 py-3 font-semibold transition-all duration-200 
-        hover:bg-white/10 rounded-lg cursor-pointer;
+        @apply px-4 sm:px-6 py-2 sm:py-3 font-semibold transition-all duration-200 
+        hover:bg-white/10 rounded-lg cursor-pointer text-sm sm:text-base;
       }
 
       .project-card {
-        @apply bg-white/10 backdrop-blur-lg p-6 rounded-xl shadow-lg 
+        @apply bg-white/10 backdrop-blur-lg p-4 sm:p-6 rounded-xl shadow-lg 
         hover:bg-white/20 transition-all duration-200 cursor-pointer;
       }
 
       .course-tabs-container {
-        @apply bg-blue-950/50 backdrop-blur-lg rounded-xl p-2 mb-6 
-        flex flex-wrap justify-center gap-2 mx-auto;
-      }
-
-      .course-tab {
-        @apply px-6 py-3 font-semibold transition-all duration-200 rounded-lg
-        border-2 border-transparent flex items-center gap-2 min-w-[200px]
-        justify-center whitespace-nowrap;
+        @apply bg-blue-950/50 backdrop-blur-lg rounded-xl p-2 mb-4 sm:mb-6 
+        flex flex-wrap justify-center gap-2 mx-auto overflow-x-auto;
       }
 
       .course-tab.active {
@@ -53,7 +54,7 @@
       }
 
       .course-icon {
-        @apply text-lg;
+        @apply text-base sm:text-lg;
       }
     }
   </style>
@@ -61,54 +62,143 @@
 <body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
   <!-- Navigation -->
   <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
-      
-      <div class="flex items-center gap-3">
-        {% if request.user.role == "Student" %}
-          <a href="/projects/createproject/" class="nav-link">
-            <i class="fas fa-plus-circle"></i>
-            Create Project
-          </a>
-        {% elif request.user.role == 'Incharge' %}
-          <a href="/projects/createcourse/" class="nav-link">
-            <i class="fas fa-book"></i>
-            Create Course
-          </a>
-        {% endif %}
-        <a href="/jobsapi/" class="nav-link">
-          <i class="fas fa-briefcase"></i>
-          Jobs
-        </a>
-        <a href="/projects/viewprojects/" class="nav-link">
-          <i class="fas fa-project-diagram"></i>
-          Projects
-        </a>
-        <div class="relative group">
-          <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
-            <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
-              {{ userdisplay|first }}
-            </span>
-            <span>{{ userdisplay }}</span>
-          </a>
+    <div class="max-w-7xl mx-auto">
+        <div class="relative">
+            <!-- Desktop and Mobile Layout -->
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="/" class="flex-shrink-0">
+                    <h1 class="text-2xl sm:text-3xl text-yellow-500 font-bold">MVSR Connect</h1>
+                </a>
+                
+                <!-- Mobile menu button -->
+                <button type="button" id="mobile-menu-button" class="lg:hidden text-white hover:text-yellow-400 focus:outline-none p-2">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center gap-3">
+                    {% if request.user.role == "Student" %}
+                        <a href="/projects/createproject/" class="nav-link">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Create Project</span>
+                        </a>
+                    {% elif request.user.role == 'Teacher' %}
+                        <a href="/createjobpost/" class="nav-link">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Create Job Post</span>
+                        </a>
+                    {% elif request.user.role == 'Incharge' %}
+                        <a href="/projects/createcourse/" class="nav-link">
+                            <i class="fas fa-book"></i>
+                            <span>Create Course</span>
+                        </a>
+                        <a href="/projects/courses/" class="nav-link">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>View Courses</span>
+                        </a>
+                        <a href="/createjobpost/" class="nav-link">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Create Job Post</span>
+                        </a>
+                    {% endif %}
+                    <a href="/jobsapi/" class="nav-link">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Jobs</span>
+                    </a>
+                    <a href="/projects/viewprojects/" class="nav-link">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Projects</span>
+                    </a>
+                    <div class="relative group">
+                        <a href="/profile/{{request.user.id}}" class="nav-link">
+                            <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                                {{ userdisplay|first }}
+                            </span>
+                            <span>{{ userdisplay }}</span>
+                        </a>
+                    </div>
+                    <a href="/logout/" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation Menu -->
+            <div id="mobile-menu" class="lg:hidden hidden absolute top-full left-0 right-0 mt-2 bg-blue-800 rounded-lg shadow-lg overflow-hidden">
+                <div class="flex flex-col py-2">
+                    {% if request.user.role == "Student" %}
+                        <a href="/projects/createproject/" class="mobile-nav-link">
+                            <i class="fas fa-plus-circle w-6"></i>
+                            <span>Create Project</span>
+                        </a>
+                    {% elif request.user.role == 'Teacher' %}
+                        <a href="/createjobpost/" class="mobile-nav-link">
+                            <i class="fas fa-plus-circle w-6"></i>
+                            <span>Create Job Post</span>
+                        </a>
+                    {% elif request.user.role == 'Incharge' %}
+                        <a href="/projects/createcourse/" class="mobile-nav-link">
+                            <i class="fas fa-book w-6"></i>
+                            <span>Create Course</span>
+                        </a>
+                        <a href="/projects/courses/" class="mobile-nav-link">
+                            <i class="fas fa-graduation-cap w-6"></i>
+                            <span>View Courses</span>
+                        </a>
+                        <a href="/createjobpost/" class="mobile-nav-link">
+                            <i class="fas fa-plus-circle w-6"></i>
+                            <span>Create Job Post</span>
+                        </a>
+                    {% endif %}
+                    <a href="/jobsapi/" class="mobile-nav-link">
+                        <i class="fas fa-briefcase w-6"></i>
+                        <span>Jobs</span>
+                    </a>
+                    <a href="/projects/viewprojects/" class="mobile-nav-link">
+                        <i class="fas fa-project-diagram w-6"></i>
+                        <span>Projects</span>
+                    </a>
+                    <a href="/profile/{{request.user.id}}" class="mobile-nav-link">
+                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                            {{ userdisplay|first }}
+                        </span>
+                        <span>{{ userdisplay }}</span>
+                    </a>
+                    <a href="/logout/" class="mobile-nav-link">
+                        <i class="fas fa-sign-out-alt w-6"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
         </div>
-        <a href="/logout/" class="nav-link">
-          <i class="fas fa-sign-out-alt"></i>
-          Logout
-        </a>
-      </div>
     </div>
   </nav>
 
-  <div class="flex">
+  <div class="flex flex-col lg:flex-row">
     <!-- Left Side: Dynamic Content -->
-    <div id="left-content" class="w-full lg:w-3/4 p-6">
-      <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 mb-6">
-        <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+    <div id="left-content" class="w-full lg:w-3/4 p-4 sm:p-6">
+      <div class="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-2">
           <i class="fas fa-project-diagram"></i>
           Projects
         </h2>
-        <p class="text-white/80">Loading batch data...</p>
+        <p class="text-white/80 text-sm sm:text-base">Loading batch data...</p>
+      </div>
+    </div>
+
+    <!-- Mobile Batch Selection -->
+    <div class="lg:hidden w-full px-4 pb-4">
+      <div class="bg-blue-950/30 backdrop-blur-lg rounded-xl p-4">
+        <div class="space-y-4">
+          <div>
+            <label for="mobile-batch" class="block text-white font-medium mb-2 text-sm sm:text-base">Select Batch</label>
+            <select id="mobile-batch" class="form-input">
+              <option value="">Select Batch</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -125,7 +215,6 @@
             <label for="batch" class="block text-white font-medium mb-2">Select Batch</label>
             <select id="batch" class="form-input">
               <option value="">Select Batch</option>
-              <!-- Options will be added dynamically -->
             </select>
           </div>
         </div>
@@ -133,8 +222,49 @@
     </div>
   </div>
 
-  <!-- JavaScript: Fetch data and dynamically update content -->
   <script>
+    // Add mobile menu functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        let isMenuOpen = false;
+
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isMenuOpen = !isMenuOpen;
+                mobileMenu.classList.toggle('hidden');
+                
+                mobileMenuButton.innerHTML = isMenuOpen 
+                    ? '<i class="fas fa-times text-xl"></i>' 
+                    : '<i class="fas fa-bars text-xl"></i>';
+            });
+
+            document.addEventListener('click', function(e) {
+                if (isMenuOpen && !mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                    mobileMenu.classList.add('hidden');
+                    isMenuOpen = false;
+                    mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                }
+            });
+
+            mobileMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024 && !mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                    isMenuOpen = false;
+                    mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                }
+            });
+        }
+
+        // Initialize batch data fetching
+        fetchBatchData();
+    });
+
     let batchData = [];
 
     // Fetch batch/course/section data from the backend.
@@ -168,13 +298,33 @@
 
     // Populate the batch dropdown.
     function populateBatchDropdown() {
-      const batchSelect = document.getElementById("batch");
-      batchData.forEach(function(batchObj) {
-        const option = document.createElement("option");
-        option.value = batchObj.batch;
-        option.textContent = batchObj.batch + " Batch";
-        batchSelect.appendChild(option);
-      });
+        const batchSelect = document.getElementById("batch");
+        const mobileBatchSelect = document.getElementById("mobile-batch");
+        
+        batchData.forEach(function(batchObj) {
+            // For desktop
+            const option = document.createElement("option");
+            option.value = batchObj.batch;
+            option.textContent = batchObj.batch + " Batch";
+            batchSelect.appendChild(option);
+            
+            // For mobile
+            const mobileOption = document.createElement("option");
+            mobileOption.value = batchObj.batch;
+            mobileOption.textContent = batchObj.batch + " Batch";
+            mobileBatchSelect.appendChild(mobileOption);
+        });
+
+        // Add event listeners for both selectors
+        mobileBatchSelect.addEventListener("change", function() {
+            batchSelect.value = this.value;
+            updateLeftContent(this.value);
+        });
+
+        batchSelect.addEventListener("change", function() {
+            mobileBatchSelect.value = this.value;
+            updateLeftContent(this.value);
+        });
     }
 
     // Build and update the left-side content for the selected batch.
@@ -312,9 +462,6 @@
       const selectedBatch = this.value;
       updateLeftContent(selectedBatch);
     });
-
-    // On page load, fetch the batch data.
-    fetchBatchData();
   </script>
 </body>
 </html>

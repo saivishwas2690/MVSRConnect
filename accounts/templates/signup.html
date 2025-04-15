@@ -118,7 +118,9 @@
           <div class="relative">
             <select id="designation" name="designation" class="form-input pl-10" required>
               <option value="">Select Designation</option>
-              <option value="Student">Student</option>
+              {% for i in designations %} 
+              <option value="{{ i }}"> {{ i }}</option>
+              {% endfor %}
             </select>
             <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               <i class="fas fa-user-tag"></i>

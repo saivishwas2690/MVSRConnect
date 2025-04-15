@@ -11,12 +11,12 @@
         @layer components {
             .nav-link {
                 @apply px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200
-                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2;
+                hover:bg-yellow-400 hover:text-blue-900 flex items-center gap-2 text-sm sm:text-base;
             }
             
             .card {
-                @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
-                border border-gray-100;
+                @apply bg-white rounded-xl shadow-lg transition-all duration-300
+                border border-gray-100 hover:border-blue-100;
             }
             
             .section-title {
@@ -28,40 +28,267 @@
                 transition-all duration-200 flex items-center justify-center gap-2 
                 font-semibold shadow-lg hover:shadow-xl;
             }
+
+            .stat-card {
+                @apply bg-gradient-to-br p-6 rounded-xl shadow-lg;
+            }
+
+            .project-card {
+                @apply bg-white p-4 rounded-lg shadow transition-all duration-200 
+                hover:shadow-lg hover:scale-[1.02] border border-gray-100;
+            }
+
+            .scrollbar-thin::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            .scrollbar-thin::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 2px;
+            }
+
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 2px;
+            }
+
+            .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+
+            .project-group {
+                @apply bg-white rounded-xl p-6 shadow-sm border border-gray-100 
+                       hover:border-purple-100 transition-all duration-300;
+            }
+
+            .domain-group {
+                @apply bg-gray-50/50 rounded-xl p-4 hover:bg-purple-50/30 
+                       transition-all duration-200 backdrop-blur-sm
+                       transform transition-transform duration-200;
+            }
+
+            .project-item {
+                @apply bg-white rounded-lg p-3 hover:shadow-md transition-all duration-200 
+                       border border-transparent hover:border-purple-200 group
+                       transform scale-100 opacity-100;
+            }
+
+            /* Update mobile nav link style */
+            .mobile-nav-link {
+                @apply flex items-center gap-3 px-6 py-3 text-white font-semibold
+                       hover:bg-blue-700 transition-all duration-200 text-base w-full;
+            }
+        }
+    </style>
+    <style>
+        .co-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .co-header {
+            background: linear-gradient(to right, #2563eb, #1d4ed8);
+            padding: 8px 16px;
+            color: white;
+        }
+
+        .co-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .co-description {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .project-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 12px;
+        }
+
+        .projects-container {
+            padding: 16px;
+            min-height: 100px;
+            background: rgba(249, 250, 251, 0.5);
+            border-radius: 0 0 12px 12px;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 12px;
+            align-items: start;
+        }
+
+        .project-item {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .projects-container.drop-zone-active {
+            background: rgba(219, 234, 254, 0.3);
+            border: 2px dashed #3b82f6;
+        }
+
+        .project-item.dragging {
+            opacity: 0.5;
+        }
+
+        .tooltip-container {
+            position: relative;
+        }
+
+        .tooltip-container:hover::after {
+            display: none;
+        }
+
+        .project-icon {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .project-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 640px) {
+            .card {
+                @apply rounded-lg;
+            }
+
+            .section-title {
+                @apply text-lg;
+            }
+
+            .btn-primary {
+                @apply px-4 py-2 text-sm;
+            }
+
+            .project-item {
+                @apply w-8 h-8;
+            }
+
+            .projects-grid {
+                grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+                gap: 8px;
+            }
+        }
+
+        /* Ensure charts are responsive */
+        canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+
+        /* Improve scrollbar visibility on mobile */
+        .scrollbar-thin {
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Ensure buttons stack properly on mobile */
+        .btn-primary {
+            @apply justify-center;
+        }
+
+        /* Improve filter controls on mobile */
+        @media (max-width: 640px) {
+            #sectionFilter,
+            #domainFilter,
+            #projectSearch {
+                @apply text-base py-3;
+            }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-800 to-blue-900 min-h-screen">
+<body class="bg-[#f0f2f5] min-h-screen">
     <!-- Navigation -->
-    <nav class="bg-blue-950/90 backdrop-blur-lg sticky top-0 z-50 px-4 py-3 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <a href="/"><h1 class="text-3xl text-yellow-500 font-bold">MVSR Connect</h1></a>
-            
-            <div class="flex items-center gap-3">
-                <a href="/projects/createcourse/" class="nav-link">
-                    <i class="fas fa-plus-circle"></i>
-                    Create Course
-                </a>
-                <a href="/jobsapi/" class="nav-link">
-                    <i class="fas fa-briefcase"></i>
-                    Jobs
-                </a>
-                <a href="/projects/viewprojects/" class="nav-link">
-                    <i class="fas fa-project-diagram"></i>
-                    Projects
-                </a>
-                <div class="relative group">
-                    <a href="/profile/{{request.user.id}}" class="nav-link flex items-center gap-2">
-                        <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
-                            {{ userdisplay|first }}
-                        </span>
-                        <span>{{ userdisplay }}</span>
+    <nav class="bg-gradient-to-r from-blue-900 to-blue-800 sticky top-0 z-50 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <div class="relative">
+                <!-- Desktop and Mobile Layout -->
+                <div class="flex justify-between items-center">
+                    <!-- Logo -->
+                    <a href="/" class="flex-shrink-0">
+                        <h1 class="text-2xl sm:text-3xl text-yellow-500 font-bold">MVSR Connect</h1>
                     </a>
+                    
+                    <!-- Mobile menu button -->
+                    <button type="button" id="mobile-menu-button" class="lg:hidden text-white hover:text-yellow-400 focus:outline-none p-2">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+
+                    <!-- Desktop Navigation -->
+                    <div class="hidden lg:flex items-center gap-3">
+                        <a href="/projects/createcourse/" class="nav-link">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Create Course</span>
+                        </a>
+                        <a href="/jobsapi/" class="nav-link">
+                            <i class="fas fa-briefcase"></i>
+                            <span>Jobs</span>
+                        </a>
+                        <a href="/projects/viewprojects/" class="nav-link">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>Projects</span>
+                        </a>
+                        <div class="relative group">
+                            <a href="/profile/{{request.user.id}}" class="nav-link">
+                                <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                                    {{ userdisplay|first }}
+                                </span>
+                                <span class="hidden sm:inline">{{ userdisplay }}</span>
+                            </a>
+                        </div>
+                        <a href="/logout/" class="nav-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
                 </div>
-                <a href="/logout/" class="nav-link">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </a>
+
+                <!-- Mobile Navigation Menu -->
+                <div id="mobile-menu" class="lg:hidden hidden absolute top-full left-0 right-0 mt-2 bg-blue-800 rounded-lg shadow-lg overflow-hidden">
+                    <div class="flex flex-col py-2">
+                        <a href="/projects/createcourse/" class="mobile-nav-link">
+                            <i class="fas fa-plus-circle w-6"></i>
+                            <span>Create Course</span>
+                        </a>
+                        <a href="/jobsapi/" class="mobile-nav-link">
+                            <i class="fas fa-briefcase w-6"></i>
+                            <span>Jobs</span>
+                        </a>
+                        <a href="/projects/viewprojects/" class="mobile-nav-link">
+                            <i class="fas fa-project-diagram w-6"></i>
+                            <span>Projects</span>
+                        </a>
+                        <a href="/profile/{{request.user.id}}" class="mobile-nav-link">
+                            <span class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold">
+                                {{ userdisplay|first }}
+                            </span>
+                            <span>{{ userdisplay }}</span>
+                        </a>
+                        <a href="/logout/" class="mobile-nav-link">
+                            <i class="fas fa-sign-out-alt w-6"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -77,78 +304,160 @@
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto p-6 space-y-6">
-        <!-- Course Header - Made more prominent -->
-        <div class="card p-8 bg-gradient-to-r from-blue-50 to-indigo-50">
+    <div class="w-full p-2 sm:p-4 lg:p-6">
+        <!-- Course Header -->
+        <div class="card p-4 sm:p-6 lg:p-8 bg-gradient-to-r from-blue-900 to-blue-800 text-white mb-4 sm:mb-6 lg:mb-8">
             <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
                 <div class="text-center lg:text-left">
-                    <h1 id="courseTitle" class="text-4xl font-bold text-gray-800 mb-3"></h1>
-                    <p id="courseCode" class="text-lg text-gray-600"></p>
+                    <h1 id="courseTitle" class="text-4xl font-bold mb-3"></h1>
+                    <p id="courseCode" class="text-xl opacity-80"></p>
                 </div>
                 <div class="flex flex-col sm:flex-row items-center gap-4">
-                    <span id="courseBatch" class="px-6 py-3 bg-yellow-100 text-yellow-800 rounded-full font-semibold text-lg"></span>
-                    <span id="courseDate" class="text-gray-500"></span>
+                    <span id="courseBatch" class="px-6 py-3 bg-white/10 backdrop-blur-sm rounded-full font-semibold text-lg"></span>
+                    <span id="courseDate" class="text-white/80"></span>
                 </div>
             </div>
         </div>
 
-        <!-- Main Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Course Requirements - Spans 1 column -->
-            <div class="card p-6 bg-gradient-to-br from-white to-blue-50">
-                <h2 class="section-title">
-                    <i class="fas fa-clipboard-list text-blue-500"></i>
-                    Course Requirements
-                </h2>
-                <div class="space-y-4" id="requirementsContainer">
-                    <!-- Requirements will be rendered here -->
+        <!-- Stats Section - Updated grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
+            <div class="stat-card from-blue-500 to-blue-600 text-white">
+                <h3 class="text-lg font-semibold mb-2">Total Projects</h3>
+                <p id="totalProjects" class="text-3xl font-bold">0</p>
+            </div>
+            <div class="stat-card from-purple-500 to-purple-600 text-white">
+                <h3 class="text-lg font-semibold mb-2">Total Domains</h3>
+                <p id="totalDomains" class="text-3xl font-bold">0</p>
+            </div>
+            <div class="stat-card from-green-500 to-green-600 text-white">
+                <h3 class="text-lg font-semibold mb-2">Active Sections</h3>
+                <p id="totalSections" class="text-3xl font-bold">0</p>
+            </div>
+            <div class="stat-card from-yellow-500 to-yellow-600 text-white">
+                <h3 class="text-lg font-semibold mb-2">Project Outcomes</h3>
+                <p id="totalCOs" class="text-3xl font-bold">11</p>
+            </div>
+        </div>
+
+        <!-- Main Grid - Updated layout -->
+        <div class="grid grid-cols-1 gap-4 sm:gap-6">
+            <!-- First Row: Course Requirements, Domain Distribution, and Rubrics -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+                <!-- Course Requirements -->
+                <div class="lg:col-span-3">
+                    <div class="card p-4 sm:p-6">
+                        <h2 class="section-title">
+                            <i class="fas fa-clipboard-list text-blue-500"></i>
+                            Course Requirements
+                        </h2>
+                        <div id="requirementsContainer" class="space-y-4 w-full">
+                            <!-- Content will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domain Distribution -->
+                <div class="lg:col-span-6">
+                    <div class="card p-4 sm:p-6">
+                        <h2 class="section-title">
+                            <i class="fas fa-chart-pie text-blue-500"></i>
+                            Domain Distribution
+                        </h2>
+                        <div class="h-[250px] sm:h-[300px]">
+                            <canvas id="domainChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rubrics Section -->
+                <div class="lg:col-span-3">
+                    <div class="card p-4 sm:p-6 h-full flex flex-col">
+                        <h2 class="section-title">
+                            <i class="fas fa-list-check text-indigo-500"></i>
+                            Rubrics
+                        </h2>
+                        <div id="rubricsContainer" class="flex-1 overflow-y-auto pr-2 scrollbar-thin">
+                            <!-- Rubrics will be rendered here -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Domain Distribution - Spans 2 columns -->
-            <div class="card p-6 lg:col-span-2 bg-gradient-to-br from-white to-indigo-50">
-                <h2 class="section-title">
-                    <i class="fas fa-chart-pie text-blue-500"></i>
-                    Overall Domain Distribution
-                </h2>
-                <div class="relative h-[300px]">
-                    <canvas id="domainChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Section-wise Domain Distribution - Spans full width -->
-            <div class="card p-6 lg:col-span-3 bg-gradient-to-br from-white to-purple-50">
+            <!-- Section-wise Distribution -->
+            <div class="card p-4 sm:p-6">
                 <h2 class="section-title">
                     <i class="fas fa-chart-bar text-indigo-500"></i>
                     Domain Distribution by Section
                 </h2>
-                <div class="relative h-[400px] w-full">
+                <div class="h-[300px] sm:h-[400px]">
                     <canvas id="sectionChart"></canvas>
                 </div>
             </div>
 
-            <!-- Course Outcomes Section - Spans full width -->
-            <div class="card p-6 lg:col-span-3 bg-gradient-to-br from-white to-green-50">
-                <div class="flex justify-between items-center mb-6">
+            <!-- Projects Overview -->
+            <div class="card p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+                    <h2 class="section-title mb-0">
+                        <i class="fas fa-project-diagram text-purple-500"></i>
+                        Projects Overview
+                    </h2>
+                    <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                        <!-- Filter Controls -->
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <select id="sectionFilter" 
+                                    class="w-full sm:w-auto bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm
+                                           focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="">All Sections</option>
+                            </select>
+                            <select id="domainFilter" 
+                                    class="w-full sm:w-auto bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm
+                                           focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="">All Domains</option>
+                            </select>
+                        </div>
+                        <div class="relative w-full sm:w-64">
+                            <div class="relative flex items-center">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" 
+                                       id="projectSearch"
+                                       placeholder="Search projects..." 
+                                       class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl 
+                                              focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent 
+                                              text-sm transition-all duration-200">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="projectsOverviewContainer" class="space-y-6 max-h-[600px] sm:max-h-[800px] overflow-y-auto pr-2 
+                     scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    <!-- Projects will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Course Outcomes -->
+            <div class="card p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <h2 class="section-title mb-0">
                         <i class="fas fa-graduation-cap text-green-600"></i>
-                        Course Outcomes
+                        Project Outcomes
                     </h2>
-                    <div class="flex items-center gap-3">
-                        <button onclick="downloadMarks()" class="btn-primary bg-green-600 hover:bg-green-700">
+                    <div class="flex flex-col sm:flex-row items-center gap-3">
+                        <button onclick="downloadMarks()" class="btn-primary bg-green-600 hover:bg-green-700 w-full sm:w-auto">
                             <i class="fas fa-file-excel"></i>
                             Download Marks
                         </button>
-                        <button id="predictButton" class="btn-primary hidden">
+                        <button id="predictButton" class="btn-primary hidden w-full sm:w-auto">
                             <i class="fas fa-magic"></i>
-                            Predict Course Outcomes
+                            Predict Project Outcomes
                         </button>
                     </div>
                 </div>
-                <div id="courseOutcomesContainer" class="space-y-6">
-                    <!-- Course outcomes will be rendered here -->
+                <div id="courseOutcomesContainer" class="space-y-4 sm:space-y-6">
+                    <!-- Content will be rendered here -->
                 </div>
-                <div class="mt-6 h-[300px]">
+                <div class="mt-4 sm:mt-6 h-[250px] sm:h-[300px]">
                     <canvas id="coChart"></canvas>
                 </div>
             </div>
@@ -159,6 +468,8 @@
         let domainChart = null;
         let coChart = null;
         let sectionChart = null;
+        let currentSection = 0;
+        let totalSections = 0;
 
         function showLoading(message) {
             document.getElementById('loadingText').textContent = message;
@@ -185,13 +496,14 @@
                 if (!response.ok) throw new Error('Failed to fetch course data');
                 
                 const data = await response.json();
-                logProjectData(data);
                 renderCourseData(data);
                 await fetchCourseOutcomes(courseId);
+                hideLoading(); // Move hideLoading here after all data is loaded
             } catch (error) {
                 console.error('Error:', error);
-            } finally {
-                hideLoading();
+                hideLoading(); // Also hide loading on error
+                // Optionally show error message to user
+                alert('Failed to load course data. Please refresh the page.');
             }
         }
 
@@ -206,35 +518,108 @@
             // Requirements
             const reqContainer = document.getElementById('requirementsContainer');
             reqContainer.innerHTML = `
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="p-4 bg-blue-50 rounded-lg">
-                        <h3 class="font-semibold text-blue-800">Guide Requirements</h3>
-                        <div class="mt-2 space-y-2">
-                            <p class="text-sm text-gray-600">
-                                <span class="font-medium">Assistant Professor:</span> 
-                                ${data.limit_for_asst_prof} projects
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <span class="font-medium">Professor:</span> 
-                                ${data['limit_for prof']} projects
-                            </p>
+                <div class="grid grid-cols-1 gap-6">
+                    <!-- Guide Requirements Card -->
+                    <div class="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:border-blue-200 transition-all duration-300">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-users-gear text-blue-600 text-lg"></i>
+                            </div>
+                            Guide Requirements
+                        </h3>
+                        <div class="space-y-4">
+                            <!-- Assistant Professor -->
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                                        <i class="fas fa-user-tie text-blue-600"></i>
+                            </div>
+                                    <span class="font-medium text-gray-700">Assistant Professor</span>
+                        </div>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                    ${data.limit_for_asst_prof} projects
+                                        </span>
+                            </div>
+                            <!-- Professor -->
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                                        <i class="fas fa-user-graduate text-blue-600"></i>
+                            </div>
+                                    <span class="font-medium text-gray-700">Professor</span>
+                        </div>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                    ${data['limit_for prof']} projects
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <div class="p-4 bg-green-50 rounded-lg">
-                        <h3 class="font-semibold text-green-800">Additional Requirements</h3>
-                        <div class="mt-2 space-y-2">
-                            ${data.requires_guide ? 
-                                '<p class="text-sm text-gray-600"><i class="fas fa-check-circle text-green-500 mr-2"></i>Guide Required</p>' : 
-                                '<p class="text-sm text-gray-600"><i class="fas fa-times-circle text-red-500 mr-2"></i>Guide Not Required</p>'
-                            }
-                            ${data.requires_internship ? 
-                                '<p class="text-sm text-gray-600"><i class="fas fa-check-circle text-green-500 mr-2"></i>Internship Required</p>' : 
-                                '<p class="text-sm text-gray-600"><i class="fas fa-times-circle text-red-500 mr-2"></i>Internship Not Required</p>'
-                            }
+
+                    <!-- Additional Requirements Card -->
+                    <div class="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:border-green-200 transition-all duration-300">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                                <i class="fas fa-clipboard-check text-green-600 text-lg"></i>
+                </div>
+                            Additional Requirements
+                        </h3>
+                        <div class="space-y-4">
+                            <!-- Guide Requirement -->
+                            <div class="flex items-center justify-between p-4 ${data.requires_guide ? 'bg-green-50' : 'bg-red-50'} rounded-lg border ${data.requires_guide ? 'border-green-100' : 'border-red-100'}">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg ${data.requires_guide ? 'bg-green-100' : 'bg-red-100'} flex items-center justify-center">
+                                        <i class="fas ${data.requires_guide ? 'fa-user-check text-green-600' : 'fa-user-xmark text-red-600'}"></i>
+                                        </div>
+                                    <span class="font-medium text-gray-700">Guide Requirement</span>
+                                            </div>
+                                <span class="px-3 py-1 ${data.requires_guide ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} rounded-full text-sm font-medium">
+                                    ${data.requires_guide ? 'Required' : 'Not Required'}
+                                                            </span>
+                                                        </div>
+                            <!-- Internship Requirement -->
+                            <div class="flex items-center justify-between p-4 ${data.requires_internship ? 'bg-green-50' : 'bg-red-50'} rounded-lg border ${data.requires_internship ? 'border-green-100' : 'border-red-100'}">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg ${data.requires_internship ? 'bg-green-100' : 'bg-red-100'} flex items-center justify-center">
+                                        <i class="fas ${data.requires_internship ? 'fa-briefcase text-green-600' : 'fa-briefcase-slash text-red-600'}"></i>
+                                    </div>
+                                    <span class="font-medium text-gray-700">Internship Requirement</span>
+                                </div>
+                                <span class="px-3 py-1 ${data.requires_internship ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} rounded-full text-sm font-medium">
+                                    ${data.requires_internship ? 'Required' : 'Not Required'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
+
+            // Add rubrics rendering
+            const rubricsContainer = document.getElementById('rubricsContainer');
+            if (data.rubrics && data.rubrics.length > 0) {
+                rubricsContainer.innerHTML = data.rubrics.map(rubric => `
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 hover:border-indigo-200 transition-all duration-200 mb-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                    <i class="fas fa-star-half-alt text-indigo-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">${rubric.name}</h4>
+                                    <span class="text-sm text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                        ${rubric.total_marks} marks
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                rubricsContainer.innerHTML = `
+                    <div class="text-center py-4 text-gray-500">
+                        No rubrics defined
+                    </div>
+                `;
+            }
 
             // Section Analytics
             if (data.Projects && data.Projects.length > 0) {
@@ -264,8 +649,6 @@
                         sectionData[section].domains[domain]++;
                     }
                 });
-
-                console.log("Processed Section Data:", sectionData);
                 renderSectionChart(sectionData);
             }
 
@@ -280,6 +663,10 @@
 
                 renderDomainChart(domains);
             }
+
+            // Update dashboard stats
+            updateDashboardStats(data);
+            renderProjectsOverview(data);
         }
 
         function renderDomainChart(domains) {
@@ -427,15 +814,9 @@
         }
 
         // Add this function to help with debugging
-        function logProjectData(data) {
-            console.log("All Projects:", data.Projects);
-            console.log("Sample Project:", data.Projects[0]);
-            console.log("Domains:", new Set(data.Projects.map(p => p.projectdomain).filter(Boolean)));
-            console.log("Sections:", new Set(data.Projects.map(p => p.Project_section)));
-        }
+
 
         async function fetchCourseOutcomes(courseId) {
-            showLoading('Loading course outcomes...');
             try {
                 const response = await fetch('/projects/courseoutcomes/', {
                     method: 'POST',
@@ -446,14 +827,15 @@
                     body: JSON.stringify({ id: courseId })
                 });
 
-                if (!response.ok) throw new Error('Failed to fetch course outcomes');
+                if (!response.ok) throw new Error('Failed to fetch Project outcomes');
                 
                 const data = await response.json();
+                // Store the course outcomes data globally for later use
+                window.courseOutcomesData = data;
                 renderCourseOutcomes(data);
             } catch (error) {
                 console.error('Error:', error);
-            } finally {
-                hideLoading();
+                alert('Failed to load course outcomes. Some features may be limited.');
             }
         }
 
@@ -461,145 +843,361 @@
             const container = document.getElementById('courseOutcomesContainer');
             const predictButton = document.getElementById('predictButton');
 
+            // Show predict button if outcomes are not finalized
             if (!data.finalized) {
                 predictButton.classList.remove('hidden');
-                predictButton.onclick = () => predictOutcomes();
-                container.innerHTML = `
-                    <div class="text-center text-gray-500 py-8">
-                        <i class="fas fa-info-circle text-4xl mb-4"></i>
-                        <p>Course outcomes have not been finalized yet.</p>
-                        <p>Click the predict button to analyze projects and assign course outcomes.</p>
-                    </div>
-                `;
-                return;
+                predictButton.removeEventListener('click', predictOutcomes);
+                predictButton.addEventListener('click', predictOutcomes);
+            } else {
+                predictButton.classList.add('hidden');
             }
 
-            predictButton.classList.add('hidden');
-            
-            // Group projects by section first, then by CO
-            const projectsBySection = {};
-            data.Projects.forEach(project => {
-                const section = project.Project_section;
-                if (!projectsBySection[section]) {
-                    projectsBySection[section] = {};
-                }
-                if (!projectsBySection[section][project.projectCO]) {
-                    projectsBySection[section][project.projectCO] = [];
-                }
-                projectsBySection[section][project.projectCO].push(project);
-            });
-
-            container.innerHTML = Object.entries(projectsBySection).map(([section, coGroups]) => `
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">Section ${section}</h3>
-                    <div class="space-y-3">
-                        ${Object.entries(coGroups).map(([co, projects]) => `
-                            <div class="border border-gray-200 rounded-lg overflow-hidden">
-                                <button class="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 
-                                             flex items-center justify-between transition-colors duration-200"
-                                        onclick="toggleCO(this)">
-                                    <div class="flex items-center gap-3">
-                                        <span class="font-semibold text-gray-800">${co}</span>
-                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                                            ${projects.length} projects
-                                        </span>
-                                    </div>
-                                    <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200"></i>
-                                </button>
-                                <div class="hidden p-4 bg-white">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        ${projects.map(project => `
-                                            <div class="bg-gray-50 p-4 rounded-lg hover:shadow-md transition-shadow">
-                                                <h5 class="font-medium text-gray-700 mb-2">${project.projectname}</h5>
-                                                <p class="text-sm text-gray-500 mb-2">${project.projectnickname}</p>
-                                                ${project.projectdomain ? 
-                                                    `<span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
-                                                        ${project.projectdomain}
-                                                    </span>` : ''
-                                                }
+            // Always render in grid layout, regardless of finalization status
+            if (data.all_course_outcome && data.all_course_outcome.length > 0) {
+                container.innerHTML = `
+                    <div class="outcomes-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                        ${data.all_course_outcome.map((co, index) => {
+                            // Find projects for this CO by matching CO name (case-insensitive)
+                            const projects = data.Projects ? data.Projects.filter(p => 
+                                p.projectCO.toLowerCase() === co.CO_name.toLowerCase()
+                            ) : [];
+                            
+                            return `
+                                <div class="co-container" data-co="${index + 1}">
+                                    <div class="co-header">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <div class="co-title">
+                                                    <i class="fas fa-graduation-cap"></i>
+                                                    PO ${index + 1}
+                                                </div>
+                                                <div class="co-description">${co.CO_name}</div>
                                             </div>
-                                        `).join('')}
+                                            <span class="project-count" id="count-${index + 1}">
+                                                ${projects.length} project${projects.length !== 1 ? 's' : ''}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="projects-container" 
+                                         id="co-${index + 1}" 
+                                         ondragover="${!data.finalized ? 'handleDragOver(event)' : ''}"
+                                         ondrop="${!data.finalized ? 'handleDrop(event)' : ''}"
+                                         data-co="${index + 1}">
+                                        <div class="projects-grid">
+                                            ${projects.map(project => `
+                                            <a href="/projects/${project.projectid}">
+                                                <div class="project-item" draggable="${!data.finalized}"
+                                                     data-project-id="${project.projectid}"
+                                                     data-section="${project.Project_section}"
+                                                     ondragstart="${!data.finalized ? 'handleDragStart(event)' : ''}"
+                                                     ondragend="${!data.finalized ? 'handleDragEnd(event)' : ''}">
+                                                    <div class="project-icon w-8 h-8 rounded-lg ${
+                                                        project.projectdomain === 'Machine Learning' ? 'bg-purple-100' : 'bg-blue-100'
+                                                    } flex items-center justify-center"
+                                                         data-tooltip="${project.projectname}">
+                                                        <span class="text-xs font-medium ${
+                                                            project.projectdomain === 'Machine Learning' ? 'text-purple-600' : 'text-blue-600'
+                                                        }">${project.projectnickname || 'N/A'}</span>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                            `).join('')}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
-                </div>
-            `).join('');
+                    ${!data.finalized ? `
+                        <div class="text-center mt-8">
+                            <p class="text-gray-500 mb-4">
+                                ${data.Projects && data.Projects.length > 0 ? 
+                                    'Drag and drop projects between outcomes to adjust assignments.' :
+                                    'Click the predict button above to analyze projects and assign project outcomes.'}
+                            </p>
+                            ${data.Projects && data.Projects.length > 0 ? `
+                                <button onclick="confirmFinalize()" 
+                                        class="btn-primary bg-green-600 hover:bg-green-700 mt-4">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    Finalize Project Outcomes
+                                </button>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                `;
 
-            // Render CO distribution chart
-            renderCOChart(data.Projects);
-        }
-
-        // Add this function for CO dropdown toggle
-        function toggleCO(button) {
-            const content = button.nextElementSibling;
-            const icon = button.querySelector('i');
-            
-            content.classList.toggle('hidden');
-            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
-        }
-
-        // Update the renderCOChart function
-        function renderCOChart(projects) {
-            const ctx = document.getElementById('coChart').getContext('2d');
-            
-            if (coChart) {
-                coChart.destroy();
+                // Initialize drag and drop if not finalized
+                if (!data.finalized) {
+                    initializeDragAndDrop();
+                }
+            } else {
+                // Show message to predict outcomes
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="w-20 h-20 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i class="fas fa-magic text-blue-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Ready to Predict Course Outcomes</h3>
+                        <p class="text-gray-600 mb-8">Click the predict button above to analyze projects and assign course outcomes.</p>
+                    </div>
+                `;
             }
 
-            // Count projects by CO
-            const coDistribution = {};
-            projects.forEach(project => {
-                if (!coDistribution[project.projectCO]) {
-                    coDistribution[project.projectCO] = 0;
-                }
-                coDistribution[project.projectCO]++;
+            // Add debug logging
+            if (data.all_course_outcome) {
+                data.all_course_outcome.forEach((co, index) => {
+                    const projects = data.Projects ? data.Projects.filter(p => 
+                        p.projectCO.toLowerCase() === co.CO_name.toLowerCase()
+                    ) : [];
+                    console.log(`CO ${index + 1} (${co.CO_name}):`, projects);
+                });
+            }
+        }
+
+        function createProjectCard(project) {
+            return `
+                <div class="project-card"
+                     id="project-${project.projectid}"
+                     draggable="true"
+                     data-project-id="${project.projectid}"
+                     data-section="${project.Project_section}"
+                     ondragstart="handleDragStart(event)"
+                     ondragend="handleDragEnd(event)">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <div style="width: 32px; height: 32px; border-radius: 6px; 
+                                    background: linear-gradient(135deg, #dbeafe, #bfdbfe); 
+                                    display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-code" style="color: #2563eb; font-size: 12px;"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <h5 style="font-weight: 500; color: #1f2937; font-size: 13px;
+                                     overflow: hidden; text-overflow: ellipsis;">
+                                ${project.Projects_title || project.projectname}
+                            </h5>
+                            ${project.Project_nickname ? `
+                                <div class="project-nickname">
+                                    <i class="fas fa-tag"></i>
+                                    ${project.Project_nickname}
+                                </div>
+                            ` : ''}
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                                <span style="padding: 2px 6px; background: #f3f4f6; color: #4b5563; 
+                                           border-radius: 4px; font-size: 11px;">
+                                    <i class="fas fa-layer-group"></i>
+                                     ${project.Project_section}
+                                </span>
+                                ${project.project_domain ? `
+                                    <span style="padding: 2px 6px; background: #dbeafe; color: #1d4ed8; 
+                                               border-radius: 4px; font-size: 11px;">
+                                        <i class="fas fa-folder"></i>
+                                        ${project.project_domain}
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        let draggedElement = null;
+        let sourceContainer = null;
+
+        function handleDragStart(event) {
+            draggedElement = event.target;
+            sourceContainer = event.target.closest('.projects-container');
+            event.dataTransfer.setData('text/plain', sourceContainer.dataset.co);
+            
+            // Add visual feedback
+            draggedElement.style.opacity = '0.5';
+            draggedElement.classList.add('dragging');
+        }
+
+        function handleDragEnd(event) {
+            if (draggedElement) {
+                draggedElement.style.opacity = '1';
+                draggedElement.classList.remove('dragging');
+            }
+            
+            // Remove highlight from all containers
+            document.querySelectorAll('.projects-container').forEach(container => {
+                container.classList.remove('drop-zone-active');
+            });
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            const container = event.target.closest('.projects-container');
+            if (container && container !== sourceContainer) {
+                container.classList.add('drop-zone-active');
+            }
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            
+            const targetContainer = event.target.closest('.projects-container');
+            if (!targetContainer || !draggedElement) return;
+            
+            const sourceCO = draggedElement.closest('.projects-container').dataset.co;
+            const targetCO = targetContainer.dataset.co;
+            
+            // Don't do anything if dropping in the same container
+            if (sourceCO === targetCO) {
+                handleDragEnd(event);
+                return;
+            }
+            
+            // Remove from source container
+            draggedElement.remove();
+            
+            // Add to target container's grid
+            const projectsGrid = targetContainer.querySelector('.projects-grid');
+            projectsGrid.appendChild(draggedElement);
+            
+            // Update counts immediately
+            updateProjectCounts();
+            
+            // Reset drag state
+            handleDragEnd(event);
+            
+           
+        }
+
+        function updateProjectCounts() {
+            document.querySelectorAll('.co-container').forEach(container => {
+                const co = container.dataset.co;
+                const count = container.querySelector('.projects-container').children.length;
+                const countElement = container.querySelector('.project-count');
+                
+                // Animate count change
+                countElement.style.transform = 'scale(0.95)';
+                countElement.style.opacity = '0.5';
+                
+                setTimeout(() => {
+                    countElement.textContent = `${count} project${count !== 1 ? 's' : ''}`;
+                    countElement.style.transform = 'scale(1)';
+                    countElement.style.opacity = '1';
+                }, 150);
+            });
+        }
+
+        function initializeDragAndDrop() {
+            document.querySelectorAll('.project-card').forEach(card => {
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
             });
 
-            coChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(coDistribution),
-                    datasets: [{
-                        label: 'Number of Projects',
-                        data: Object.values(coDistribution),
-                        backgroundColor: '#3B82F6',
-                        borderColor: '#2563EB',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: 'Course Outcomes Distribution',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                precision: 0
-                            }
-                        }
-                    }
-                }
+            document.querySelectorAll('.projects-container').forEach(container => {
+                container.addEventListener('dragover', handleDragOver);
+                container.addEventListener('drop', handleDrop);
             });
+        }
+
+        function finalizeOutcomes() {
+            const updatedProjects = [];
+            
+            // Collect data from all CO containers
+            document.querySelectorAll('.co-container').forEach(container => {
+                const coNumber = container.dataset.co;
+                const coName = container.querySelector('.co-description').textContent;
+                
+                // Changed from .project-card to .project-item
+                container.querySelectorAll('.project-item').forEach(item => {
+                    const projectId = item.dataset.projectId;
+                    const section = item.dataset.section;
+                    
+                    // Only add if we have a valid project ID
+                    if (projectId) {
+                        updatedProjects.push({
+                            id: projectId,
+                            project_id: projectId,
+                            co_number: coNumber,
+                            co_name: coName,
+                            section: section
+                        });
+                    }
+                });
+            });
+            
+            
+            // Get course ID from URL
+            const courseId = window.location.pathname.split('/').filter(Boolean).pop();
+            
+            // Create request data
+            const requestData = {
+                course_id: courseId,
+                projects: updatedProjects
+            };
+            
+            // Only proceed if we have projects to update
+            if (updatedProjects.length > 0) {
+                submitUpdatedOutcomes(requestData);
+            } else {
+                alert('No projects found to finalize. Please ensure projects are assigned to project outcomes.');
+            }
+        }
+
+        async function submitUpdatedOutcomes(requestData) {
+            try {
+                showLoading('Finalizing project outcomes...');
+
+                const response = await fetch('/projects/finalizeoutcomes/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) throw new Error('Failed to finalize outcomes');
+                
+                showSuccess('Project outcomes have been successfully finalized!');
+                
+                // Reload page after success
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to finalize outcomes. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function showSuccess(message) {
+            const successMessage = document.createElement('div');
+            successMessage.style.cssText = `
+                position: fixed;
+                top: 16px;
+                right: 16px;
+                background: #ecfdf5;
+                border-left: 4px solid #059669;
+                color: #065f46;
+                padding: 16px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                z-index: 50;
+            `;
+            
+            successMessage.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-check-circle"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            document.body.appendChild(successMessage);
+            
+            setTimeout(() => {
+                successMessage.remove();
+            }, 2000);
         }
 
         async function predictOutcomes() {
-            showLoading('Analyzing projects and predicting course outcomes...');
+            showLoading('Analyzing projects and predicting project outcomes...');
             try {
                 const courseId = window.location.pathname.split('/').filter(Boolean).pop();
                 const response = await fetch('/projects/predictoutcomes/', {
@@ -613,10 +1211,21 @@
 
                 if (!response.ok) throw new Error('Failed to predict outcomes');
                 
-                const data = await response.json();
-                renderCourseOutcomes({ finalized: true, Projects: data.Projects });
+                const predictedData = await response.json();
+
+                // Combine the predicted projects with the original CO data
+                const combinedData = {
+                    finalized: false, // Keep it unfinalized until explicitly finalized
+                    Projects: predictedData.Projects,
+                    all_course_outcome: window.courseOutcomesData.all_course_outcome
+                };
+                
+                // Render the updated view
+                renderCourseOutcomes(combinedData);
+                
             } catch (error) {
                 console.error('Error:', error);
+                alert('Failed to predict outcomes. Please try again.');
             } finally {
                 hideLoading();
             }
@@ -662,8 +1271,260 @@
             }
         }
 
+        function renderProjectsOverview(data) {
+            const container = document.getElementById('projectsOverviewContainer');
+            
+            // Initialize filters first
+            initializeFilters(data);
+            
+            // Create initial view
+            updateProjectsView(data);
+        }
+
+        function initializeFilters(data) {
+            const sectionFilter = document.getElementById('sectionFilter');
+            const domainFilter = document.getElementById('domainFilter');
+            
+            // Get unique sections and domains
+            const sections = [...new Set(data.Projects.map(p => p.Project_section))].sort();
+            const domains = [...new Set(data.Projects.map(p => p.project_domain).filter(Boolean))].sort();
+            
+            // Populate section filter with modern styling
+            sectionFilter.innerHTML = `
+                <option value="">All Sections (${sections.length})</option>
+                ${sections.map(section => `
+                    <option value="${section}">Section ${section}</option>
+                `).join('')}
+            `;
+            
+            // Populate domain filter with modern styling
+            domainFilter.innerHTML = `
+                <option value="">All Domains (${domains.length})</option>
+                ${domains.map(domain => `
+                    <option value="${domain}">${domain}</option>
+                `).join('')}
+            `;
+            
+            // Add event listeners
+            sectionFilter.addEventListener('change', () => updateProjectsView(data));
+            domainFilter.addEventListener('change', () => updateProjectsView(data));
+            document.getElementById('projectSearch').addEventListener('input', () => updateProjectsView(data));
+        }
+
+        function updateProjectsView(data) {
+            const container = document.getElementById('projectsOverviewContainer');
+            const searchTerm = document.getElementById('projectSearch').value.toLowerCase();
+            const selectedSection = document.getElementById('sectionFilter').value;
+            const selectedDomain = document.getElementById('domainFilter').value;
+            
+            // Filter projects based on selection
+            let filteredProjects = data.Projects;
+            
+            if (selectedSection) {
+                filteredProjects = filteredProjects.filter(p => p.Project_section == selectedSection);
+            }
+            
+            if (selectedDomain) {
+                filteredProjects = filteredProjects.filter(p => p.project_domain == selectedDomain);
+            }
+            
+            if (searchTerm) {
+                filteredProjects = filteredProjects.filter(p => 
+                    p.Projects_title.toLowerCase().includes(searchTerm) ||
+                    (p.Project_nickname && p.Project_nickname.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            // Group filtered projects by section
+            const sections = [...new Set(filteredProjects.map(p => p.Project_section))].sort();
+            
+            // Update the view with filtered projects
+            container.innerHTML = `
+                <div class="space-y-8">
+                    ${sections.map(section => {
+                        const sectionProjects = filteredProjects.filter(p => p.Project_section == section);
+                        const domains = [...new Set(sectionProjects.map(p => p.project_domain || 'Uncategorized'))];
+                        
+                        return `
+                            <div class="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:border-purple-200 transition-all duration-300">
+                                <div class="flex items-center gap-6 mb-6">
+                                    <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-600 to-purple-700 
+                                                flex items-center justify-center shadow-lg">
+                                        <span class="text-white font-bold text-2xl">${section}</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-gray-800">Section ${section}</h3>
+                                        <div class="flex items-center gap-4 mt-2">
+                                            <span class="flex items-center gap-2 px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                                <i class="fas fa-project-diagram"></i>
+                                                ${sectionProjects.length} Projects
+                                            </span>
+                                            <span class="flex items-center gap-2 px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                                <i class="fas fa-folder"></i>
+                                                ${domains.length} Domains
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+                                    ${domains.map(domain => {
+                                        const domainProjects = sectionProjects.filter(p => 
+                                            (p.project_domain || 'Uncategorized') === domain
+                                        );
+                                        
+                                        return `
+                                            <div class="bg-gray-50 rounded-xl p-5 hover:bg-purple-50/80 transition-all duration-200">
+                                                <div class="flex items-center gap-3 mb-4">
+                                                    <div class="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center">
+                                                        <i class="fas fa-folder text-purple-600"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="font-semibold text-gray-800">${domain}</h4>
+                                                        <span class="text-sm text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full">
+                                                            ${domainProjects.length} projects
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
+                                                    ${domainProjects.map(project => `
+                                                        <a href="/projects/${project.project_id}/" 
+                                                           class="inline-block p-2 bg-white rounded-lg hover:shadow-md transition-all duration-200
+                                                                  border border-transparent hover:border-purple-200 tooltip-container">
+                                                            <div class="w-8 h-8 rounded-lg ${
+                                                                project.project_domain === 'Machine Learning' ? 'bg-purple-100' : 'bg-blue-100'
+                                                            } flex items-center justify-center" 
+                                                                 title="${project.Projects_title}">
+                                                                <span class="text-xs font-medium ${
+                                                                    project.project_domain === 'Machine Learning' ? 'text-purple-600' : 'text-blue-600'
+                                                                }">${project.Project_nickname || 'N/A'}</span>
+                                                            </div>
+                                                        </a>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            // Show "No results" message if no projects match the filters
+            if (!filteredProjects.length) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12 text-gray-500">
+                        <i class="fas fa-search text-4xl mb-4"></i>
+                        <p class="text-lg font-medium">No projects found</p>
+                        <p class="text-sm mt-2">Try adjusting your filters</p>
+                    </div>
+                `;
+            }
+        }
+
+        function updateDashboardStats(data) {
+            const projects = data.Projects || [];
+            const domains = new Set(projects.map(p => p.project_domain).filter(Boolean));
+            const sections = new Set(projects.map(p => p.Project_section));
+            
+           let coCount = 11;
+
+            document.getElementById('totalProjects').textContent = projects.length;
+            document.getElementById('totalDomains').textContent = domains.size;
+            document.getElementById('totalSections').textContent = sections.size;
+            document.getElementById('totalCOs').textContent = coCount; // Update with actual count
+        }
+
+        function confirmFinalize() {
+            // Create and show the confirmation dialog
+            const confirmDialog = document.createElement('div');
+            confirmDialog.className = 'fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50';
+            confirmDialog.innerHTML = `
+                <div class="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4 transform transition-all">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">
+                            Confirm Finalization
+                        </h3>
+                        <p class="text-gray-600">
+                            Are you sure you want to finalize the project outcomes? This action cannot be undone.
+                        </p>
+                    </div>
+                    <div class="flex justify-center gap-3">
+                        <button onclick="this.closest('.fixed').remove()" 
+                                class="px-6 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 
+                                       transition-all duration-200">
+                            <i class="fas fa-times mr-2"></i>
+                            Cancel
+                        </button>
+                        <button onclick="finalizeOutcomes(); this.closest('.fixed').remove()" 
+                                class="px-6 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 
+                                       transition-all duration-200">
+                            <i class="fas fa-check mr-2"></i>
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add the dialog to the page
+            document.body.appendChild(confirmDialog);
+
+            // Add fade-in animation
+            requestAnimationFrame(() => {
+                confirmDialog.querySelector('.transform').style.transform = 'scale(1)';
+                confirmDialog.querySelector('.transform').style.opacity = '1';
+            });
+        }
+
         // Initialize
         fetchCourseData();
+
+        // Mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            let isMenuOpen = false;
+
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent event from bubbling up
+                    isMenuOpen = !isMenuOpen;
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Update icon based on menu state
+                    mobileMenuButton.innerHTML = isMenuOpen 
+                        ? '<i class="fas fa-times text-xl"></i>' 
+                        : '<i class="fas fa-bars text-xl"></i>';
+                });
+
+                // Close mobile menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (isMenuOpen && !mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                        mobileMenu.classList.add('hidden');
+                        isMenuOpen = false;
+                        mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                    }
+                });
+
+                // Prevent menu from closing when clicking inside it
+                mobileMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+
+                // Close mobile menu on window resize if switching to desktop view
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth >= 1024 && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        isMenuOpen = false;
+                        mobileMenuButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

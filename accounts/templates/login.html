@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -149,14 +150,12 @@
     
     /* Loader */
     .loader {
-      border: 3px solid rgba(255, 255, 255, 0.3);
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
-      border-top: 3px solid white;
+      border-top: 2px solid white;
       width: 20px;
       height: 20px;
       animation: spin 1s linear infinite;
-      display: none;
-      margin: 0 auto;
     }
     
     @keyframes spin {
@@ -337,10 +336,10 @@
                 </div>
                 <input type="password" name="password" placeholder="Password" class="block w-full pl-10 pr-3 py-3 border-0 focus:ring-0 focus:outline-none text-gray-600" required />
               </div>
-              
+              <!-- <div> -->
               <button type="submit" id="login-button" class="btn-primary w-full py-3 rounded-lg text-white font-medium shadow-lg relative">
                 <span class="btn-text">Sign In</span>
-                <div class="loader"></div>
+                <div class="loader hidden " style="margin-left: 47.3%;" ></div>
               </button>
             </form>
             
@@ -370,8 +369,10 @@
               </div>
               
               <button type="button" id="verify-btn" class="btn-secondary w-full py-3 rounded-lg text-white font-medium shadow-lg relative">
-                <span class="btn-text"><i class="fas fa-paper-plane mr-2"></i> Send Verification Link</span>
-                <div class="loader"></div>
+                <span class="btn-text">
+                    <i class="fas fa-paper-plane mr-2"></i> Send Verification Link
+                </span>
+                <div class="loader hidden"></div>
               </button>
               
               <div id="message-container" class="rounded-lg p-4 hidden">
@@ -420,6 +421,58 @@
     </div>
   </footer>
 
+  <!-- Forgot Password Popup -->
+  <div id="forgotPasswordPopup" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 transform transition-all duration-300 scale-90 opacity-0" id="popupContent">
+        <!-- Header with decorative bar -->
+        <div class="h-2 bg-gradient-to-r from-blue-700 to-yellow-500"></div>
+        
+        <div class="p-6">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Reset Password</h3>
+                <button onclick="closePopup()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form id="forgotPasswordForm" class="space-y-4">
+                <div>
+                    <label for="resetEmail" class="block text-sm font-medium text-gray-700 mb-1">
+                        Enter your email address
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-400"></i>
+                        </div>
+                        <input type="email" 
+                               id="resetEmail" 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                               placeholder="your@email.com" 
+                               required>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 
+                               text-white rounded-lg py-2 px-4 font-medium transition-all duration-200 
+                               flex items-center justify-center gap-2">
+                    <span class="btn-text">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Send Reset Link
+                    </span>
+                    <div class="loader hidden"></div>
+                </button>
+            </form>
+
+            <!-- Response Message -->
+            <div id="responseMessage" class="mt-4 p-4 rounded-lg hidden"></div>
+        </div>
+    </div>
+  </div>
+
   <script>
     // Toggle between login and signup forms
     const formToggle = document.getElementById('form-toggle');
@@ -459,65 +512,66 @@
       // Form will submit normally (for demo purposes we just show the loader)
     });
 
-    // Signup email verification with loader
+    // Update the verify button click handler
     document.getElementById("verify-btn").addEventListener("click", async () => {
-      const email = document.getElementById("signup-email").value;
-      console.log(email);
-      const message = document.getElementById("message");
-      const messageContainer = document.getElementById("message-container");
-      const verifyBtn = document.getElementById("verify-btn");
+        const email = document.getElementById("signup-email").value;
+        const message = document.getElementById("message");
+        const messageContainer = document.getElementById("message-container");
+        const verifyBtn = document.getElementById("verify-btn");
+        const btnText = verifyBtn.querySelector('.btn-text');
+        const loader = verifyBtn.querySelector('.loader');
 
-      if (!email) {
-        message.textContent = "Please enter an email address";
-        message.className = "text-sm text-center text-red-500";
-        messageContainer.className = "rounded-lg p-4 bg-red-50 border border-red-100";
-        messageContainer.classList.remove("hidden");
-        return;
-      }
-
-      // Show loading state
-      verifyBtn.classList.add('loading');
-      
-      message.textContent = "Sending verification email...";
-      message.className = "text-sm text-center text-gray-600";
-      messageContainer.className = "rounded-lg p-4 bg-gray-50 border border-gray-100";
-      messageContainer.classList.remove("hidden");
-
-      try {
-        const response = await fetch("/verify-email/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-          },
-          body: JSON.stringify({ email })
-        });
-
-        const data = await response.json();
-        
-        // Hide loading state
-        setTimeout(() => {
-          verifyBtn.classList.remove('loading');
-          
-          if (data.success) {
-            message.textContent = "Verification link sent! Check your email.";
-            message.className = "text-sm text-center text-green-600";
-            messageContainer.className = "rounded-lg p-4 bg-green-50 border border-green-100";
-          } else {
-            message.textContent = data.error;
+        if (!email) {
+            message.textContent = "Please enter an email address";
             message.className = "text-sm text-center text-red-500";
             messageContainer.className = "rounded-lg p-4 bg-red-50 border border-red-100";
-          }
-        }, 1500); // Simulate network delay for demo
-      } catch (error) {
-        // Handle fetch errors
-        setTimeout(() => {
-          verifyBtn.classList.remove('loading');
-          message.textContent = "Network error. Please try again later.";
-          message.className = "text-sm text-center text-red-500";
-          messageContainer.className = "rounded-lg p-4 bg-red-50 border border-red-100";
-        }, 1500);
-      }
+            messageContainer.classList.remove("hidden");
+            return;
+        }
+
+        // Show loading state
+        btnText.classList.add('hidden');
+        loader.classList.remove('hidden');
+        
+        message.textContent = "Sending verification email...";
+        message.className = "text-sm text-center text-gray-600";
+        messageContainer.className = "rounded-lg p-4 bg-gray-50 border border-gray-100";
+        messageContainer.classList.remove("hidden");
+
+        try {
+            const response = await fetch("/verify-email/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await response.json();
+            
+            // Reset button state
+            btnText.classList.remove('hidden');
+            loader.classList.add('hidden');
+            
+            if (data.success) {
+                message.textContent = "Verification link sent! Check your email.";
+                message.className = "text-sm text-center text-green-600";
+                messageContainer.className = "rounded-lg p-4 bg-green-50 border border-green-100";
+            } else {
+                message.textContent = data.error;
+                message.className = "text-sm text-center text-red-500";
+                messageContainer.className = "rounded-lg p-4 bg-red-50 border border-red-100";
+            }
+        } catch (error) {
+            // Handle fetch errors
+            btnText.classList.remove('hidden');
+            loader.classList.add('hidden');
+            
+            message.textContent = "Network error. Please try again later.";
+            message.className = "text-sm text-center text-red-500";
+            messageContainer.className = "rounded-lg p-4 bg-red-50 border border-red-100";
+        }
     });
 
     // Add focus effects to form fields
@@ -541,6 +595,112 @@
           behavior: 'smooth'
         });
       });
+    });
+
+    // Update the forgot password link click handler
+    document.querySelector('a[href="#"][class*="text-divi-teal"]').addEventListener('click', function(e) {
+      e.preventDefault();
+      openPopup();
+    });
+
+    function openPopup() {
+      const popup = document.getElementById('forgotPasswordPopup');
+      const content = document.getElementById('popupContent');
+      popup.classList.remove('hidden');
+      // Trigger animation after a small delay
+      setTimeout(() => {
+        content.classList.remove('scale-90', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+      }, 10);
+      document.getElementById('resetEmail').focus();
+    }
+
+    function closePopup() {
+      const popup = document.getElementById('forgotPasswordPopup');
+      const content = document.getElementById('popupContent');
+      content.classList.add('scale-90', 'opacity-0');
+      content.classList.remove('scale-100', 'opacity-100');
+      setTimeout(() => {
+        popup.classList.add('hidden');
+        // Reset form and message
+        document.getElementById('forgotPasswordForm').reset();
+        document.getElementById('responseMessage').classList.add('hidden');
+      }, 300);
+    }
+
+    // Handle form submission
+    document.getElementById('forgotPasswordForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('resetEmail').value;
+      const submitButton = this.querySelector('button[type="submit"]');
+      const btnText = submitButton.querySelector('.btn-text');
+      const loader = submitButton.querySelector('.loader');
+      const responseMessage = document.getElementById('responseMessage');
+
+      try {
+        // Show loading state
+        btnText.classList.add('hidden');
+        loader.classList.remove('hidden');
+        submitButton.disabled = true;
+        responseMessage.classList.add('hidden');
+
+        const response = await fetch('/sendresetpasswordtoken/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await response.json();
+
+        // Show response message
+        responseMessage.classList.remove('hidden');
+
+        if (response.ok) {
+          responseMessage.className = 'mt-4 p-4 rounded-lg bg-green-50 border border-green-100';
+          responseMessage.innerHTML = `
+            <div class="flex items-center gap-2 text-green-600">
+              <i class="fas fa-check-circle"></i>
+              <p class="text-sm">Password reset link has been sent to your email!</p>
+            </div>
+          `;
+          
+          // Close popup after 2 seconds on success
+          setTimeout(closePopup, 2000);
+        } else {
+          responseMessage.className = 'mt-4 p-4 rounded-lg bg-red-50 border border-red-100';
+          responseMessage.innerHTML = `
+            <div class="flex items-center gap-2 text-red-600">
+              <i class="fas fa-exclamation-circle"></i>
+              <p class="text-sm">${data.error || 'Failed to send reset link. Please try again.'}</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        responseMessage.classList.remove('hidden');
+        responseMessage.className = 'mt-4 p-4 rounded-lg bg-red-50 border border-red-100';
+        responseMessage.innerHTML = `
+          <div class="flex items-center gap-2 text-red-600">
+            <i class="fas fa-exclamation-circle"></i>
+            <p class="text-sm">Network error. Please try again later.</p>
+          </div>
+        `;
+      } finally {
+        // Reset button state
+        btnText.classList.remove('hidden');
+        loader.classList.add('hidden');
+        submitButton.disabled = false;
+      }
+    });
+
+    // Close popup when clicking outside
+    document.getElementById('forgotPasswordPopup').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closePopup();
+      }
     });
   </script>
 </body>
