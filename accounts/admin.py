@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, JobPost, Batch, Skill, Interest, SocialLink, PersonalProject, NewUser
+from .models import User, JobPost, Batch, Skill, Interest, SocialLink, PersonalProject, NewUser, UserForgotPassword
 
 class UserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
@@ -18,4 +18,5 @@ admin.site.register(Interest)
 admin.site.register(SocialLink)
 admin.site.register(PersonalProject)
 admin.site.register(NewUser)
+admin.site.register(UserForgotPassword)
 
