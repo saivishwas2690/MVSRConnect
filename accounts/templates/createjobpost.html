@@ -211,11 +211,11 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label for="link" class="form-label">Application Link (optional)</label>
+                    <label for="link" class="form-label">Application Link </label>
                     <div class="relative">
                         <i class="fas fa-link input-icon"></i>
                         <input type="url" id="link" class="form-input"
-                               placeholder="https://...">
+                               placeholder="https://..." required>
                     </div>
                 </div>
 
@@ -270,7 +270,7 @@
                 const content = document.getElementById('content').value;
                 const link = document.getElementById('link').value;
 
-                const response = await fetch('createjobpost/', {
+                const response = await fetch('/createjobpost/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

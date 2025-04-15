@@ -75,7 +75,8 @@ def send_verification_email(request):
             email = data.get("email")
 
             try:
-                validate_email(email)
+                if not validate_email(email):
+                    return JsonResponse({"error": "Email is not valid"}, status=400)
             except ValidationError:
                 return JsonResponse({"error": "Email is not valid"}, status=400)
 
@@ -118,7 +119,8 @@ def send_reset_password_mail(request):
             print(data)
 
             try:
-                validate_email(email)
+                if not validate_email(email):
+                    return JsonResponse({"error": "Invalid email"}, status=400)
             except ValidationError:
                 return JsonResponse({"error": "Invalid email"}, status=400)
 
@@ -241,7 +243,7 @@ def signup(request, token):
                 rollno = extract_rollno(email)
                 batch = extract_batch(email, rollno)
             else:
-                if designation not in ["Professor", "Asst. Professor"]: 
+                if designation not in ["Professor", "Assistant Professor"]: 
                     return JsonResponse({"error": "Invalid designation"}, status=400)
                 rollno = None
                 batch = None
@@ -368,10 +370,10 @@ def get_job_posts(request, page_number):
             start_index = (page_number - 1) * post_per_call  # Adjust for 0-based index
             end_index = start_index + post_per_call
 
-            job_posts = JobPost.objects.all()[start_index:end_index]  # Use slicing for pagination
+            job_posts = JobPost.objects.all().order_by('-created_at')[start_index:end_index]  # Use slicing for pagination
 
             if not job_posts:
-                return JsonResponse({"message": "No job posts available"}, status=404)
+                return JsonResponse({"message": "No job posts available"}, status=200)
 
             data = [
                 {
@@ -388,7 +390,7 @@ def get_job_posts(request, page_number):
             return JsonResponse(data, safe=False, status=200)
 
         except EmptyPage:
-            return JsonResponse({"error": "Page number out of range"}, status=404)
+            return JsonResponse({"error": "Page number out of range"}, status=200)
         except Exception as e:
             logger.error(f"Error fetching job posts: {str(e)}", exc_info=True)
             return JsonResponse({"error": "Internal Server Error"}, status=500)
@@ -401,13 +403,15 @@ def create_job_post(request):
         return render(request, "createjobpost.html", {"userdisplay": userdisplay, "display_edit_button": display_edit_button})
     if request.method == "POST":
         try:
+            
             data = json.loads(request.body)
             company = data.get("company")
             jobrole = data.get("jobrole")
             content = data.get("content")
             link = data.get("link")
 
-            if not company or not jobrole or not content:
+
+            if not company or not jobrole or not content or link:
                 return JsonResponse({"error": "Missing required fields"}, status=400)
 
             job_post = JobPost(
