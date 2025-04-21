@@ -551,6 +551,14 @@ def upload_document(request):
                 if document_type == "report":
                     if project.report is not None:
                         return JsonResponse({"error": "You have already uploaded report"}, status=400)
+                
+                # Update project with the new file URL
+                if document_type == "guide_approval_form" and project.course.requires_guide == False:
+                    return JsonResponse({"error": "The course does not require a Guide"}, status=400)
+                
+                # Verify that the user is part of the project team
+                if not ProjectStudent.objects.filter(project=project, student=request.user).exists():
+                    return JsonResponse({"error": "You are not authorized to upload documents for this project"}, status=403)
                     
                 # Create a temporary file name
                 file_name = f"{project_id}_{document_type}_{request.user.id}" + ".pdf"
@@ -568,13 +576,6 @@ def upload_document(request):
                 if not file_url:
                     raise Exception("Failed to get URL from Cloudinary")
 
-                # Update project with the new file URL
-                if document_type == "guide_approval_form" and project.course.requires_guide == False:
-                    return JsonResponse({"error": "The course does not require a Guide"}, status=400)
-                
-                # Verify that the user is part of the project team
-                if not ProjectStudent.objects.filter(project=project, student=request.user).exists():
-                    return JsonResponse({"error": "You are not authorized to upload documents for this project"}, status=403)
 
                 # Update the appropriate field
                 if document_type == "abstract":
@@ -1211,9 +1212,7 @@ def finalize_outcomes(request):
         
         data = json.loads(request.body)
         course_id = data.get("course_id")
-        print(course_id)
         course = Course.objects.get(id=course_id)
-        print(course)
         if course.CO_finalized:
             return JsonResponse({"error": "Outcomes already finalized"}, status=400)
 
@@ -1225,7 +1224,6 @@ def finalize_outcomes(request):
             CO_name = project.get("co_name")
 
             try:
-                print(project_id)
                 project_obj = Project.objects.get(id=project_id)
             except Project.DoesNotExist:
                 return JsonResponse({"error": "Project not found"}, status=404)
@@ -1250,5 +1248,3 @@ def finalize_outcomes(request):
     
     except Exception as e:
         return JsonResponse({"error": f"An unexpected error occurred: "}, status=500)
-            
-            

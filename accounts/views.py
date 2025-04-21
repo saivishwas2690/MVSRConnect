@@ -116,8 +116,7 @@ def send_reset_password_mail(request):
         try:
             data = json.loads(request.body)
             email = data.get("email")
-            print(data)
-
+            
             try:
                 if not validate_email(email):
                     return JsonResponse({"error": "Invalid email"}, status=400)

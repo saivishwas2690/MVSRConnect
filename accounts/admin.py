@@ -10,7 +10,6 @@ class UserAdmin(UserAdmin):
     list_filter = ('role', 'designation', 'batch')
 
 admin.site.register(User, UserAdmin)
-
 admin.site.register(JobPost)
 admin.site.register(Batch)
 admin.site.register(Skill)

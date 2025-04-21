@@ -10,7 +10,6 @@ class NewUser(models.Model):
     token = models.CharField(max_length=1000, unique=True)
 
 
-
 class UserForgotPassword(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='password_resets')
     token = models.CharField(max_length=1000, unique=True, default=uuid.uuid4)
@@ -256,8 +255,6 @@ class Interest(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.name}"
-
-
 
 
 class SocialLink(models.Model):
