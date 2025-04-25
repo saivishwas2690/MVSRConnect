@@ -754,6 +754,7 @@
         const data = await response.json();
 
         if (!response.ok) {
+
           throw new Error(data.error || 'Failed to create project');
         }
 
@@ -764,7 +765,8 @@
       } catch (error) {
         // Error handling
         console.error("Error:", error);
-        alert(data.error || "An error occurred while creating the project. Please try again.");
+        alert(error || "Please give valid inputs");
+
       } finally {
         // Reset loading state
         const submitButton = document.querySelector('button[type="submit"]');
