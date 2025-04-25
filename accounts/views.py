@@ -80,6 +80,9 @@ def send_verification_email(request):
             except ValidationError:
                 return JsonResponse({"error": "Email is not valid"}, status=400)
 
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({"error": "Email already exists"}, status=400)
+
             if NewUser.objects.filter(email=email).exists():
                 return JsonResponse({"error": "Email verification mail has been sent already, Please check in spam also."}, status=400)
 
